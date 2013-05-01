@@ -19,7 +19,7 @@ target
 *.ipr
 *.iws
 *.iml
-lib
+#lib
 bundle
 dist
 bin
