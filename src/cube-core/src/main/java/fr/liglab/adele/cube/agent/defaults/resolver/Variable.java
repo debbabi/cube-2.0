@@ -96,11 +96,21 @@ public class Variable extends AbstractManagedElement {
         this.value = value;
     }   */
 
+    public void setValue(String uri) {
+        if (uri != null) {
+            this.values.push(uri);
+        }
+    }
+
     public String getValue() {
         if (this.values.size() > 0)
             return this.values.peek();
         else
             return null;
+    }
+
+    public boolean hasValue() {
+        return this.values.size() > 0;
     }
 
     public String getName() {

@@ -81,7 +81,7 @@
                             fr.liglab.adele.cube,
 
                             fr.liglab.adele.cube.agent,
-                            fr.liglab.adele.cube.agent.cmf,
+                            fr.liglab.adele.cube.cmf,
                             fr.liglab.adele.cube.agent.defaults,
 
                             fr.liglab.adele.cube.platform,

@@ -16,43 +16,18 @@
  */
 
 
-package fr.liglab.adele.cube.agent.cmf;
+package fr.liglab.adele.cube.cmf;
 
 /**
  * Author: debbabi
  * Date: 4/26/13
- * Time: 9:18 PM
+ * Time: 12:01 PM
  */
-public class Notification {
-
-    int notificationType = -1;
-
-    Object newValue = null;
-    Object oldValue = null;
-
-    public Notification(int ntype) {
-        this.notificationType = ntype;
+public class InvalidNameException extends Exception {
+    public InvalidNameException() {
+         super("Invalid Name!");
     }
-
-    public Notification(int ntype, Object newValue) {
-        this(ntype);
-        this.newValue = newValue;
-    }
-
-    public Notification(int ntype, Object newValue, Object oldValue) {
-        this(ntype, newValue);
-        this.oldValue = oldValue;
-    }
-
-    public int getNotificationType() {
-        return notificationType;
-    }
-
-    public Object getNewValue() {
-        return newValue;
-    }
-
-    public Object getOldValue() {
-        return oldValue;
+    public InvalidNameException(String msg) {
+        super(msg);
     }
 }

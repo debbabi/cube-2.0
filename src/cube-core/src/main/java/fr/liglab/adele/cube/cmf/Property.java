@@ -16,15 +16,36 @@
  */
 
 
-package fr.liglab.adele.cube.agent.cmf;
+package fr.liglab.adele.cube.cmf;
+
+import java.io.Serializable;
 
 /**
  * Author: debbabi
- * Date: 4/26/13
- * Time: 11:08 AM
+ * Date: 4/25/13
+ * Time: 12:14 PM
  */
-public class PropertyExistException extends Exception {
-    public PropertyExistException(String msg) {
-        super(msg);
+public class Property implements Serializable {
+
+    private String name = null;
+    private String value = null;
+
+    public Property(String name, String value) throws InvalidNameException {
+        if (name == null || name.length() == 0)
+            throw new InvalidNameException("Invalid name for the new Reference!");
+        this.name = name.toLowerCase();
+        this.value = value;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }

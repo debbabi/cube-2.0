@@ -18,9 +18,9 @@
 
 package fr.liglab.adele.cube.agent.defaults;
 
-import fr.liglab.adele.cube.agent.RuntimeModel;
+import fr.liglab.adele.cube.agent.CubeAgent;
 import fr.liglab.adele.cube.agent.RuntimeModelController;
-import fr.liglab.adele.cube.agent.cmf.*;
+import fr.liglab.adele.cube.cmf.*;
 
 import java.util.List;
 
@@ -31,10 +31,10 @@ import java.util.List;
  */
 public class RuntimeModelControllerImpl implements RuntimeModelController {
 
-    RuntimeModel runtimeModel;
+    CubeAgent agent;
 
-    public RuntimeModelControllerImpl(RuntimeModel rm) {
-        this.runtimeModel = rm;
+    public RuntimeModelControllerImpl(CubeAgent agent) {
+        this.agent = agent;
     }
 
     protected String validate(ManagedElement element) {
@@ -45,7 +45,7 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
         if (isInRuntimeModel(this.runtimeModel, element)) {
 
         } */
-        ((RuntimeModelImpl)this.runtimeModel).addUnmanagedElement(element);
+        //((RuntimeModelImpl)this.runtimeModel).addUnmanagedElement(element);
         return element.getUUID();
     }
 
@@ -59,27 +59,58 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
         if (element != null) {
             ((AbstractManagedElement)element).updateState(ManagedElement.UNMANAGED);
         }
-        ((RuntimeModelImpl)this.runtimeModel).addUnmanagedElement(element);
+        //((RuntimeModelImpl)this.runtimeModel).addUnmanagedElement(element);
         return element.getUUID();
     }
 
-    public List<Property> getProperties(String managed_element_uri) {
+    public List<Property> getProperties(String managed_element_uuid) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public String getPropertyValue(String managed_element_uri, String name) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public String getPropertyValue(String managed_element_uuid, String name) {
+        ManagedElement me1 = getLocalElement(managed_element_uuid);
+        if (me1 != null) {
+            return me1.getProperty(name);
+        }
+        return null;
     }
 
-    public boolean addProperty(String managed_element_uri, String name, String value) throws PropertyExistException, InvalidNameException {
+    public boolean addProperty(String managed_element_uuid, String name, String value) throws PropertyExistException, InvalidNameException {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public String updateProperty(String managed_element_uri, String name, String newValue) throws PropertyNotExistException {
+    public String updateProperty(String managed_element_uuid, String name, String newValue) throws PropertyNotExistException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<String> getReferencedElements(String managed_element_uri, String reference_name) {
+    public List<String> getReferencedElements(String managed_element_uuid, String reference_name) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean addReference(String managed_element_uuid, String reference_name, String referenced_element_uri) throws InvalidNameException {
+        System.out.println("["+managed_element_uuid+"]---->["+referenced_element_uri+"]");
+        ManagedElement me1 = getLocalElement(managed_element_uuid);
+        if (me1 != null) {
+            Reference r = me1.addReference(reference_name, false);
+            if (r != null) {
+                r.addReferencedElement(referenced_element_uri);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public ManagedElement getLocalElement(String managed_element_uuid) {
+        ManagedElement me = agent.getRuntimeModel().getManagedElement(managed_element_uuid);
+        if (me != null)
+            return me;
+        else {
+            for (ManagedElement unme : agent.getUnmanagedElements()) {
+                if (unme.getUUID().equalsIgnoreCase(managed_element_uuid)) {
+                    return unme;
+                }
+            }
+        }
+        return null;
     }
 }

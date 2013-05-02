@@ -19,8 +19,10 @@
 package fr.liglab.adele.cube.extensions.core.constraints;
 
 import fr.liglab.adele.cube.agent.ConstraintResolver;
-import fr.liglab.adele.cube.agent.cmf.InvalidNameException;
-import fr.liglab.adele.cube.agent.cmf.PropertyExistException;
+import fr.liglab.adele.cube.agent.CubeAgent;
+import fr.liglab.adele.cube.agent.RuntimeModelController;
+import fr.liglab.adele.cube.cmf.InvalidNameException;
+import fr.liglab.adele.cube.cmf.PropertyExistException;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
 import fr.liglab.adele.cube.extensions.core.model.Component;
 
@@ -37,24 +39,29 @@ public class HasComponentType implements ConstraintResolver {
         return instance;
     }
 
-    public void init(Variable subjectVariable, Variable objectVariable) {
+    public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public boolean check(Variable subjectVariable, Variable objectVariable) {
-        /*Object s = subjectVariable.getValue();
-        Object otype = objectVariable.getValue();
-        if (s!=null && s instanceof ManagedElement) {
-            Object type = ((ManagedElement)s).getProperty(Component.CORE_COMPONENT_TYPE);
-            if (type != null && type.toString().equalsIgnoreCase(otype.toString()))
+    public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+        String instance1_uri = subjectVariable.getValue();
+        String type = objectVariable.getValue();
+
+        RuntimeModelController rmController = agent.getRuntimeModelController();
+        if (rmController != null) {
+
+            String value = rmController.getPropertyValue(instance1_uri, Component.CORE_COMPONENT_TYPE);
+            if (value != null && value.equalsIgnoreCase(type)) {
                 return true;
-        } */
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        }
+        return false;
     }
 
-    public boolean applyCharacteristic(Variable subjectVariable, Variable objectVariable) {
+    public boolean applyCharacteristic(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+        System.out.println(".........,::::...//.. applying characteristic: HasComponentType");
         if (subjectVariable != null && objectVariable != null && objectVariable.getValue() != null) {
-
+            System.out.println(".........,::::...//.. ******");
             if (subjectVariable.getProperty(Component.CORE_COMPONENT_TYPE) == null) {
                 try {
                     subjectVariable.addProperty(Component.CORE_COMPONENT_TYPE, objectVariable.getValue().toString());
@@ -77,7 +84,7 @@ public class HasComponentType implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean applyObjective(Variable subjectVariable, Variable objectVariable) {
+    public boolean applyObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -89,7 +96,7 @@ public class HasComponentType implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean cancelObjective(Variable subjectVariable, Variable objectVariable) {
+    public boolean cancelObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -100,7 +107,7 @@ public class HasComponentType implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public String find(Variable subjectVariable, Variable objectVariable) {
+    public String find(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

@@ -8,15 +8,20 @@
 			<core:Component id="a">
 				<core:hasComponentType o="A"/>
 			</core:Component>
-
 			<core:Component id="b">
 				<core:hasComponentType o="B"/>
 			</core:Component>		
+			<core:Component id="c">
+				<core:hasComponentType o="C"/>
+			</core:Component>		
+
 		</elements>
+
 
 		<goals>
 			<goal>
 				<core:connected s="@a" o="@b"/>
+				<core:connected s="@b" o="@c"/>
 			</goal>
 		</goals>
 

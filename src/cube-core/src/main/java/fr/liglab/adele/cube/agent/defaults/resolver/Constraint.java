@@ -19,6 +19,7 @@
 package fr.liglab.adele.cube.agent.defaults.resolver;
 
 import fr.liglab.adele.cube.agent.ConstraintResolver;
+import fr.liglab.adele.cube.agent.CubeAgent;
 import fr.liglab.adele.cube.extensions.Extension;
 
 /**
@@ -97,13 +98,13 @@ public class Constraint {
      * Initialize the object variable value from the subject variable value.
      * Call the real constraint identified by namespace:name.
      */
-    public void init() {
+    public void init(CubeAgent agent) {
         if (objectVariable.isPrimitive() == false) {
             Extension e = this.subjectVariable.getAgent().getExtension(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
-                    cr.init(subjectVariable, objectVariable);
+                    cr.init(agent, subjectVariable, objectVariable);
                 }
             }
         }
@@ -114,26 +115,26 @@ public class Constraint {
      * Call the real constraint identified by namespace:name.
      * @return
      */
-    public boolean check() {
+    public boolean check(CubeAgent agent) {
         if (subjectVariable.values.size() > 0 && objectVariable.values.size() > 0) {
             Extension e = this.subjectVariable.getAgent().getExtension(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
-                    return cr.check(subjectVariable, objectVariable);
+                    return cr.check(agent, subjectVariable, objectVariable);
                 }
             }
         }
         return false;
     }
 
-    public void applyCharacteristic() {
-        if (subjectVariable.values.size() > 0 && objectVariable.values.size() > 0) {
+    public void applyCharacteristic(CubeAgent agent) {
+        if (objectVariable.hasValue()) {
             Extension e = this.subjectVariable.getAgent().getExtension(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
-                    cr.applyCharacteristic(subjectVariable, objectVariable);
+                    cr.applyCharacteristic(agent, subjectVariable, objectVariable);
                 }
             }
         }
@@ -142,25 +143,25 @@ public class Constraint {
     /**
      * If subject or object are remote instances?
      */
-    public void applyObjective() {
-        if (subjectVariable.values.size() > 0 && objectVariable.values.size() > 0) {
+    public void applyObjective(CubeAgent agent) {
+        if (subjectVariable.hasValue() && objectVariable.hasValue()) {
             Extension e = this.subjectVariable.getAgent().getExtension(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
-                    cr.applyObjective(subjectVariable, objectVariable);
+                    cr.applyObjective(agent, subjectVariable, objectVariable);
                 }
             }
         }
     }
 
-    public void cancelObjective() {
+    public void cancelObjective(CubeAgent agent) {
         if (subjectVariable.values.size() > 0 && objectVariable.values.size() > 0) {
             Extension e = this.subjectVariable.getAgent().getExtension(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
-                    cr.cancelObjective(subjectVariable, objectVariable);
+                    cr.cancelObjective(agent, subjectVariable, objectVariable);
                 }
             }
         }
@@ -169,13 +170,13 @@ public class Constraint {
     /**
      * Find subject variable when knowing the object var.
      */
-    public String find() {
+    public String find(CubeAgent agent) {
         if (subjectVariable.values.size() > 0 && objectVariable.values.size() > 0) {
             Extension e = this.subjectVariable.getAgent().getExtension(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
-                    return cr.find(subjectVariable, objectVariable);
+                    return cr.find(agent, subjectVariable, objectVariable);
                 }
             }
         }

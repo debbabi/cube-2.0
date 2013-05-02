@@ -16,12 +16,20 @@
  */
 
 
-package fr.liglab.adele.cube.agent.defaults.resolver;
+package fr.liglab.adele.cube.cmf;
+
+import fr.liglab.adele.cube.agent.defaults.AbstractManagedElement;
 
 /**
  * Author: debbabi
- * Date: 4/28/13
- * Time: 5:54 PM
+ * Date: 4/27/13
+ * Time: 2:25 PM
  */
-public class Assignment {
+public interface ManagedElementListener {
+
+    public static final int CHANGED_STATE = 0;
+    public static final int CHANGED_PROPERTY = 1;
+    public static final int CHANGED_REFERENCE = 2;
+
+    public void update(AbstractManagedElement me, Notification notification);
 }

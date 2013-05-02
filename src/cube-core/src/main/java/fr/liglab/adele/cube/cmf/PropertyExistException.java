@@ -16,20 +16,15 @@
  */
 
 
-package fr.liglab.adele.cube.agent.cmf;
-
-import fr.liglab.adele.cube.agent.defaults.AbstractManagedElement;
+package fr.liglab.adele.cube.cmf;
 
 /**
  * Author: debbabi
- * Date: 4/27/13
- * Time: 2:25 PM
+ * Date: 4/26/13
+ * Time: 11:08 AM
  */
-public interface ManagedElementListener {
-
-    public static final int CHANGED_STATE = 0;
-    public static final int CHANGED_PROPERTY = 1;
-    public static final int CHANGED_REFERENCE = 2;
-
-    public void update(AbstractManagedElement me, Notification notification);
+public class PropertyExistException extends Exception {
+    public PropertyExistException(String msg) {
+        super(msg);
+    }
 }

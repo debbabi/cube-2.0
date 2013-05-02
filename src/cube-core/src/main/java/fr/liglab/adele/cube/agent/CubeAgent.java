@@ -2,9 +2,13 @@ package fr.liglab.adele.cube.agent;
 
 import fr.liglab.adele.cube.CubePlatform;
 import fr.liglab.adele.cube.archetype.Archetype;
+import fr.liglab.adele.cube.cmf.InvalidNameException;
+import fr.liglab.adele.cube.cmf.ManagedElement;
+import fr.liglab.adele.cube.cmf.PropertyExistException;
 import fr.liglab.adele.cube.extensions.Extension;
 
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Author: debbabi
@@ -67,9 +71,30 @@ public interface CubeAgent {
      */
     public RuntimeModel getRuntimeModel();
 
+    /**
+     * Creates a new Managed Element.
+     * @param namespace
+     * @param name
+     * @param properties
+     * @return
+     */
+    public ManagedElement newManagedElement(String namespace, String name, Properties properties) throws InvalidNameException, PropertyExistException;
+
+    /**
+     * Gets the list of unmanaed elements.
+     * (which are not associated to the runtime model)
+     * @return
+     */
+    public List<ManagedElement> getUnmanagedElements();
+
     public void run();
     public void stop();
     public void destroy();
 
-
+    /**
+     * Gets the Runtime Model Controller.
+     *
+     * @return
+     */
+    public RuntimeModelController getRuntimeModelController();
 }

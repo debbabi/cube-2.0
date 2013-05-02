@@ -19,6 +19,7 @@
 package fr.liglab.adele.cube.extensions.core.constraints;
 
 import fr.liglab.adele.cube.agent.ConstraintResolver;
+import fr.liglab.adele.cube.agent.CubeAgent;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
 
 /**
@@ -34,11 +35,11 @@ public class InScope implements ConstraintResolver {
         return instance;
     }
 
-    public void init(Variable subjectVariable, Variable objectVariable) {
+    public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public boolean check(Variable subjectVariable, Variable objectVariable) {
+    public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         System.out.println("** checking inscope..");
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -52,7 +53,7 @@ public class InScope implements ConstraintResolver {
      * @param subjectVariable
      * @param objectVariable
      */
-    public boolean applyCharacteristic(Variable subjectVariable, Variable objectVariable) {
+    public boolean applyCharacteristic(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         //To change body of implemented methods use File | Settings | File Templates.
         return false;
     }
@@ -65,7 +66,7 @@ public class InScope implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean applyObjective(Variable subjectVariable, Variable objectVariable) {
+    public boolean applyObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -77,7 +78,7 @@ public class InScope implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean cancelObjective(Variable subjectVariable, Variable objectVariable) {
+    public boolean cancelObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -88,7 +89,7 @@ public class InScope implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public String find(Variable subjectVariable, Variable objectVariable) {
+    public String find(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

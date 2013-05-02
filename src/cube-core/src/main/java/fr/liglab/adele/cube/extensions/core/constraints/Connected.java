@@ -19,7 +19,11 @@
 package fr.liglab.adele.cube.extensions.core.constraints;
 
 import fr.liglab.adele.cube.agent.ConstraintResolver;
+import fr.liglab.adele.cube.agent.CubeAgent;
+import fr.liglab.adele.cube.agent.RuntimeModelController;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
+import fr.liglab.adele.cube.cmf.InvalidNameException;
+import fr.liglab.adele.cube.extensions.core.model.Component;
 
 /**
  * Author: debbabi
@@ -34,11 +38,11 @@ public class Connected implements ConstraintResolver {
         return instance;
     }
 
-    public void init(Variable subjectVariable, Variable objectVariable) {
+    public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public boolean check(Variable subjectVariable, Variable objectVariable) {
+    public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         System.out.println("** checking connected..");
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -52,7 +56,7 @@ public class Connected implements ConstraintResolver {
      * @param subjectVariable
      * @param objectVariable
      */
-    public boolean applyCharacteristic(Variable subjectVariable, Variable objectVariable) {
+    public boolean applyCharacteristic(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         //To change body of implemented methods use File | Settings | File Templates.
         return false;
     }
@@ -65,8 +69,23 @@ public class Connected implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean applyObjective(Variable subjectVariable, Variable objectVariable) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    public boolean applyObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+        String instance1_uri = subjectVariable.getValue();
+        String instance2_uri = objectVariable.getValue();
+
+        RuntimeModelController rmController = agent.getRuntimeModelController();
+        if (rmController != null) {
+            try {
+            if (rmController.addReference(instance1_uri, Component.CORE_COMPONENT_OUTPUTS, instance2_uri)) {
+                if (rmController.addReference(instance2_uri, Component.CORE_COMPONENT_INPUTS, instance1_uri)) {
+                    return true;
+                }
+            }
+            } catch (InvalidNameException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return false;
     }
 
     /**
@@ -77,7 +96,7 @@ public class Connected implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean cancelObjective(Variable subjectVariable, Variable objectVariable) {
+    public boolean cancelObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -88,7 +107,7 @@ public class Connected implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public String find(Variable subjectVariable, Variable objectVariable) {
+    public String find(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

@@ -27,9 +27,9 @@ import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
  */
 public interface ConstraintResolver {
 
-    void init(Variable subjectVariable, Variable objectVariable);
+    void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable);
 
-    boolean check(Variable subjectVariable, Variable objectVariable);
+    boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable);
 
     /**
      * Applies the predicate information located on the objectVariable, on the subjectVariable
@@ -41,7 +41,7 @@ public interface ConstraintResolver {
      * @param objectVariable
      * @return TRUE if applied
      */
-    boolean applyCharacteristic(Variable subjectVariable, Variable objectVariable);
+    boolean applyCharacteristic(CubeAgent agent, Variable subjectVariable, Variable objectVariable);
 
     /**
      * Apply the objective constraint.
@@ -51,7 +51,7 @@ public interface ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    boolean applyObjective(Variable subjectVariable, Variable objectVariable);
+    boolean applyObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable);
 
     /**
      * Cancel the applied objective constraint.
@@ -60,7 +60,7 @@ public interface ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    boolean cancelObjective(Variable subjectVariable, Variable objectVariable);
+    boolean cancelObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable);
 
     /**
      * Find value from object variable.
@@ -69,5 +69,5 @@ public interface ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    String find(Variable subjectVariable, Variable objectVariable);
+    String find(CubeAgent agent, Variable subjectVariable, Variable objectVariable);
 }

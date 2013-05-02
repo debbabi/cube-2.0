@@ -21,9 +21,9 @@ package fr.liglab.adele.cube.agent.defaults;
 import fr.liglab.adele.cube.agent.CubeAgent;
 import fr.liglab.adele.cube.agent.Resolver;
 import fr.liglab.adele.cube.agent.RuntimeModelListener;
-import fr.liglab.adele.cube.agent.cmf.ManagedElement;
-import fr.liglab.adele.cube.agent.cmf.Notification;
-import fr.liglab.adele.cube.agent.defaults.resolver.Assignment;
+import fr.liglab.adele.cube.agent.defaults.resolver.Constraint;
+import fr.liglab.adele.cube.cmf.ManagedElement;
+import fr.liglab.adele.cube.cmf.Notification;
 import fr.liglab.adele.cube.agent.defaults.resolver.ResolutionGraph;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
 
@@ -47,9 +47,8 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
     }
 
     public void update(RuntimeModelImpl rm, Notification notification) {
-        System.out.println("[Resolver] notified! " + notification.getNotificationType());
         switch (notification.getNotificationType()) {
-            case RuntimeModelListener.NEW_UNMANAGED_INSTANCE: {
+            case RuntimeModelListener.NEW_UNCHECKED_INSTANCE: {
                 Object instance = notification.getNewValue();
                 if (instance != null && instance instanceof ManagedElement) {
                     resolveNewInstance((ManagedElement)instance);
@@ -59,30 +58,69 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
     }
 
     private void resolveNewInstance(ManagedElement instance) {
-        System.out.println("[Resolver] resolve.new.unmanaged.instance: " + instance.getUUID());
-
-        /**
-         * The set of values
+        System.out.println("[RESOLVER] resolve.new.unmanaged.instance: " + instance.getUUID());
+        /*
+         * Create the root variable that contains the newly created instance (to be resolved).
          */
-        Assignment assignment;
-
-
-
         Variable var = new Variable(agent, instance.getNamespace(), instance.getName());
-        //var.setValue(instance);
-        var.values.push(instance.getUUID());
+        var.setValue(instance.getUUID());
+
+        /*
+         * Create a Resolution Graph (Constraints Graph).
+         */
         ResolutionGraph constraintsGraph = new ResolutionGraph(this.agent);
+        /*
+         * Set the root variable.
+         */
         constraintsGraph.setRoot(var);
 
-        if (constraintsGraph.resolve() == true) {
-            validateSolution(constraintsGraph);
-        }
+        /*
+         * Start the resolution processs.
+         */
+        if (constraintsGraph.resolve()) {
 
-        ((RuntimeModelControllerImpl) ((RuntimeModelImpl) this.agent.getRuntimeModel()).getController()).validate(instance);
+            validateSolution(constraintsGraph);
+
+        } else {
+
+        }
     }
 
+    /**
+     * Validate the found solution.
+     * @param graph
+     */
     void validateSolution(ResolutionGraph graph) {
+         System.out.println("\nvalidating solution..\n");
+
+        if (graph != null) {
+            if (graph.getRoot() != null) {
+                validateVariable(graph.getRoot());
+            }
+        }
+        //((RuntimeModelControllerImpl) ((RuntimeModelImpl) this.agent.getRuntimeModel()).getController()).validate(instance);
         // TODO:
+    }
+
+    void validateVariable(Variable v) {
+        if (v.getValue() != null) {
+            //
+            if (!v.isPrimitive()) {
+                for (Constraint c : v.getBinaryConstraints()) {
+                    validateVariable(c.getObjectVariable());
+                }
+            }
+            //
+            String uuid =v.getValue();
+            ManagedElement me = agent.getRuntimeModelController().getLocalElement(uuid);
+            if (me != null) {
+                if (me.getState() == ManagedElement.UNCHECKED) {
+                    ((AbstractManagedElement)me).validate();
+                } else if (me.getState() == ManagedElement.UNMANAGED) {
+                    agent.getRuntimeModel().add(me);
+                }
+            }
+        }
     }
 
     /**
@@ -113,10 +151,9 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
      *
      *
      *
-     * @param assignment
      * @param csp
      */
-    void backtrackingSearch(Assignment assignment, ResolutionGraph csp) {
+    void backtrackingSearch(ResolutionGraph csp) {
         /**
          * if assignement is complete then return assignement
          * var = select_unassigned_variable(variables[constraintsGraph], assignement, csp) do

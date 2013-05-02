@@ -16,18 +16,15 @@
  */
 
 
-package fr.liglab.adele.cube.agent.cmf;
+package fr.liglab.adele.cube.cmf;
 
 /**
  * Author: debbabi
  * Date: 4/26/13
- * Time: 12:01 PM
+ * Time: 11:32 AM
  */
-public class InvalidNameException extends Exception {
-    public InvalidNameException() {
-         super("Invalid Name!");
-    }
-    public InvalidNameException(String msg) {
+public class PropertyNotExistException extends Exception {
+    public PropertyNotExistException(String msg) {
         super(msg);
     }
 }

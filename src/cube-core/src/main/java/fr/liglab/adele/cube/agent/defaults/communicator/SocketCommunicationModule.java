@@ -154,7 +154,7 @@ public class SocketCommunicationModule implements Communicator {
 	 * @param btx
 	 */
 	private void createServer(int port, BundleContext btx) {
-        log.info("creating server in port: " + port);
+        //log.info("creating server in port: " + port);
 		try {
 			this.server = new Server(port, btx) {				
 				@Override

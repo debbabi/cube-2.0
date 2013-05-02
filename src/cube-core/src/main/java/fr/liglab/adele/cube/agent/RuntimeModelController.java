@@ -1,6 +1,6 @@
 package fr.liglab.adele.cube.agent;
 
-import fr.liglab.adele.cube.agent.cmf.*;
+import fr.liglab.adele.cube.cmf.*;
 
 import java.util.List;
 
@@ -13,14 +13,18 @@ public interface RuntimeModelController {
 
     public String addManagedElement(ManagedElement element);
 
-    public List<Property> getProperties(String managed_element_uri);
+    public List<Property> getProperties(String managed_element_uuid);
 
-    public String getPropertyValue(String managed_element_uri, String name) ;
+    public String getPropertyValue(String managed_element_uuid, String name) ;
 
-    public boolean addProperty(String managed_element_uri, String name, String value) throws PropertyExistException, InvalidNameException;
+    public boolean addProperty(String managed_element_uuid, String name, String value) throws PropertyExistException, InvalidNameException;
 
-    public String updateProperty(String managed_element_uri, String name, String newValue) throws PropertyNotExistException;
+    public String updateProperty(String managed_element_uuid, String name, String newValue) throws PropertyNotExistException;
 
-    public List<String> getReferencedElements(String managed_element_uri, String reference_name);
+    public List<String> getReferencedElements(String managed_element_uuid, String reference_name);
 
-}
+    public boolean addReference(String managed_element_uuid, String reference_name, String referenced_element_uri) throws InvalidNameException;
+
+    public ManagedElement getLocalElement(String managed_element_uuid);
+
+    }

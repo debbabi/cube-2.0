@@ -19,8 +19,9 @@
 package fr.liglab.adele.cube.extensions.core.constraints;
 
 import fr.liglab.adele.cube.agent.ConstraintResolver;
-import fr.liglab.adele.cube.agent.cmf.InvalidNameException;
-import fr.liglab.adele.cube.agent.cmf.PropertyExistException;
+import fr.liglab.adele.cube.agent.CubeAgent;
+import fr.liglab.adele.cube.cmf.InvalidNameException;
+import fr.liglab.adele.cube.cmf.PropertyExistException;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
 import fr.liglab.adele.cube.extensions.core.model.Scope;
 
@@ -37,11 +38,11 @@ public class HasScopeId implements ConstraintResolver {
         return instance;
     }
 
-    public void init(Variable subjectVariable, Variable objectVariable) {
+    public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public boolean check(Variable subjectVariable, Variable objectVariable) {
+    public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         System.out.println("** checking hasscopeid..");
         /*
         if (subjectVariable != null && subjectVariable.getValue() != null &&
@@ -56,7 +57,7 @@ public class HasScopeId implements ConstraintResolver {
         return false;
     }
 
-    public boolean applyCharacteristic(Variable subjectVariable, Variable objectVariable) {
+    public boolean applyCharacteristic(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         if (objectVariable != null && objectVariable.getValue() != null) {
             if (subjectVariable.getProperty(Scope.CORE_SCOPE_ID) == null) {
                 try {
@@ -80,7 +81,7 @@ public class HasScopeId implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean applyObjective(Variable subjectVariable, Variable objectVariable) {
+    public boolean applyObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -92,7 +93,7 @@ public class HasScopeId implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean cancelObjective(Variable subjectVariable, Variable objectVariable) {
+    public boolean cancelObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -103,7 +104,7 @@ public class HasScopeId implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public String find(Variable subjectVariable, Variable objectVariable) {
+    public String find(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

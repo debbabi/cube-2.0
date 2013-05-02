@@ -16,7 +16,7 @@
  */
 
 
-package fr.liglab.adele.cube.agent.cmf;
+package fr.liglab.adele.cube.cmf;
 
 import java.io.Serializable;
 import java.util.ArrayList;

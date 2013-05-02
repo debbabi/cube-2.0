@@ -19,13 +19,15 @@
 package fr.liglab.adele.cube.extensions.core.model;
 
 import fr.liglab.adele.cube.agent.CubeAgent;
-import fr.liglab.adele.cube.agent.cmf.InvalidNameException;
-import fr.liglab.adele.cube.agent.cmf.PropertyExistException;
-import fr.liglab.adele.cube.agent.cmf.PropertyNotExistException;
-import fr.liglab.adele.cube.agent.cmf.Reference;
+import fr.liglab.adele.cube.cmf.InvalidNameException;
+import fr.liglab.adele.cube.cmf.PropertyExistException;
+import fr.liglab.adele.cube.cmf.PropertyNotExistException;
+import fr.liglab.adele.cube.cmf.Reference;
 import fr.liglab.adele.cube.agent.defaults.AbstractManagedElement;
 import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -40,6 +42,8 @@ public class Component extends AbstractManagedElement {
     public static final String CORE_COMPONENT_ID = "core.component.id";
     public static final String CORE_COMPONENT_TYPE = "core.component.type";
     public static final String CORE_COMPONENT_NODE = "core.component.node";
+    public static final String CORE_COMPONENT_INPUTS = "core.component.inputs";
+    public static final String CORE_COMPONENT_OUTPUTS = "core.component.outputs";
 
     public Component(CubeAgent agent) {
         super(agent);
@@ -120,6 +124,61 @@ public class Component extends AbstractManagedElement {
             return r.getReferencedElements().get(0);
         }
         return null;
+    }
+
+    /**
+     * Add Input Component
+     * @param compURI
+     * @return
+     */
+    public boolean addInputComponent(String compURI) {
+        Reference r = null;
+        try {
+            r = addReference(CORE_COMPONENT_INPUTS, false);
+        } catch (InvalidNameException e) {
+            e.printStackTrace();
+        }
+        return r.addReferencedElement(compURI);
+    }
+
+    /**
+     * Get input Components
+     * @return
+     */
+    public List<String> getInputComponents() {
+        Reference r = this.getReference(CORE_COMPONENT_INPUTS);
+        if (r != null) {
+            return r.getReferencedElements();
+        }
+        return new ArrayList<String>();
+    }
+
+
+    /**
+     * Add Input Component
+     * @param compURI
+     * @return
+     */
+    public boolean addOutputComponent(String compURI) {
+        Reference r = null;
+        try {
+            r = addReference(CORE_COMPONENT_OUTPUTS, false);
+        } catch (InvalidNameException e) {
+            e.printStackTrace();
+        }
+        return r.addReferencedElement(compURI);
+    }
+
+    /**
+     * Get input Components
+     * @return
+     */
+    public List<String> getOutputComponents() {
+        Reference r = this.getReference(CORE_COMPONENT_OUTPUTS);
+        if (r != null) {
+            return r.getReferencedElements();
+        }
+        return new ArrayList<String>();
     }
 
     @Override

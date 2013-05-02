@@ -19,8 +19,8 @@
 package fr.liglab.adele.cube.agent.defaults;
 
 import fr.liglab.adele.cube.agent.*;
-import fr.liglab.adele.cube.agent.cmf.ManagedElement;
-import fr.liglab.adele.cube.agent.cmf.Notification;
+import fr.liglab.adele.cube.cmf.ManagedElement;
+import fr.liglab.adele.cube.cmf.Notification;
 
 import java.util.*;
 
@@ -38,11 +38,10 @@ public class RuntimeModelImpl implements RuntimeModel {
 
     Map<String, ManagedElement> elements = new HashMap<String, ManagedElement>();
 
-    private RuntimeModelController controller;
+
 
     public RuntimeModelImpl(CubeAgent agent) {
         this.agent = agent;
-        controller = new RuntimeModelControllerImpl(this);
         listeners = new Vector<RuntimeModelListener>();
     }
 
@@ -50,10 +49,16 @@ public class RuntimeModelImpl implements RuntimeModel {
      * Adds a Managed Element instance to the Runtime Model.
      * It will hold automatically the UNMANAGED state, until it will be resolved!
      *
-     * @param me Managed Element instance to be added.
+     * @param element Managed Element instance to be added.
      */
-    public void add(ManagedElement me) {
-        this.controller.addManagedElement(me);
+    public void add(ManagedElement element) {
+        if (element != null) {
+            ((AbstractManagedElement)element).updateState(ManagedElement.UNCHECKED);
+            this.elements.put(element.getUUID(), element);
+            ((CubeAgentImpl)this.agent).deleteUnmanagedElement(element.getUUID());
+            setChanged();
+            notifyListeners(new Notification(RuntimeModelListener.NEW_UNCHECKED_INSTANCE, element));
+        }
     }
 
     public List<ManagedElement> getManagedElements() {
@@ -73,13 +78,13 @@ public class RuntimeModelImpl implements RuntimeModel {
         }
         return result;
     }
-
+    /*
     void validate(ManagedElement me) {
         if (me != null) {
             ((AbstractManagedElement)me).updateState(ManagedElement.VALID);
         }
-    }
-
+    } */
+    /*
     void addUnmanagedElement(ManagedElement me) {
         if (me.getState() == ManagedElement.UNMANAGED) {
             this.elements.put(me.getUUID(), me);
@@ -87,23 +92,19 @@ public class RuntimeModelImpl implements RuntimeModel {
             notifyListeners(new Notification(RuntimeModelListener.NEW_UNMANAGED_INSTANCE, me));
         }
     }
-    private void addUncheckedElement(ManagedElement me) {
-        if (me != null) {
-            ((AbstractManagedElement)me).updateState(ManagedElement.UNCHECKED);
-        }
-        this.elements.put(me.getUUID(), me);
-        //System.out.println("[RM] adding unchecked instance + notification");
-        setChanged();
-        notifyListeners(new Notification(RuntimeModelListener.NEW_UNCHECKED_INSTANCE, me));
-    }
 
-    private void addValidElement(AbstractManagedElement me) {
+    private void addUncheckedElement(ManagedElement me) {
+        if (me.getState() == ManagedElement.UNCHECKED) {
+            this.elements.put(me.getUUID(), me);
+            setChanged();
+            notifyListeners(new Notification(RuntimeModelListener.NEW_UNCHECKED_INSTANCE, me));
+        }
+    }*/
+
+    private void addValidElement(ManagedElement me) {
         Notification n = new Notification(RuntimeModelListener.NEW_VALID_INSTANCE);
     }
 
-    public RuntimeModelController getController() {
-        return this.controller;
-    }
 
     /**
      * ================================ NOTIFICATIONS ===============================================

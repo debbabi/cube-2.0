@@ -16,9 +16,7 @@
  */
 
 
-package fr.liglab.adele.cube.agent.cmf;
-
-import fr.liglab.adele.cube.agent.cmf.*;
+package fr.liglab.adele.cube.cmf;
 
 import java.util.List;
 
@@ -70,6 +68,12 @@ public interface ManagedElement {
     public int getState();
 
     /**
+     * Gets the instance current state as String.
+     * @return
+     */
+    public String getStateAsString();
+
+    /**
      * Get Managed Element Properties
      * @return
      */
@@ -87,7 +91,7 @@ public interface ManagedElement {
      * @param name
      * @param value
      * @return TRUE if the property added; FALSE other else.
-     * @throws fr.liglab.adele.cube.agent.cmf.PropertyExistException
+     * @throws fr.liglab.adele.cube.cmf.PropertyExistException
      */
     public boolean addProperty(String name, String value) throws PropertyExistException, InvalidNameException;
 
@@ -96,7 +100,7 @@ public interface ManagedElement {
      * @param name
      * @param newValue
      * @return NULL is name is null; or Old value if a property exist with 'name' name.
-     * @throws fr.liglab.adele.cube.agent.cmf.PropertyNotExistException
+     * @throws fr.liglab.adele.cube.cmf.PropertyNotExistException
      */
     public String updateProperty(String name, String newValue) throws PropertyNotExistException;
 
@@ -111,6 +115,12 @@ public interface ManagedElement {
      * @return
      */
     public Reference getReference(String name) ;
+
+    /**
+     * Gets a textual description of the element.
+     * @return
+     */
+    public String getTextualDescription();
 
     /**
      *

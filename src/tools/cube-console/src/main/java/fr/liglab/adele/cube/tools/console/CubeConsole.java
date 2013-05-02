@@ -20,8 +20,7 @@ package fr.liglab.adele.cube.tools.console;
 
 import fr.liglab.adele.cube.CubePlatform;
 import fr.liglab.adele.cube.agent.CubeAgent;
-import fr.liglab.adele.cube.agent.cmf.*;
-import fr.liglab.adele.cube.extensions.Extension;
+import fr.liglab.adele.cube.cmf.*;
 import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
 import fr.liglab.adele.cube.util.parser.ArchetypeParser;
 import org.apache.felix.ipojo.annotations.Component;
@@ -110,42 +109,21 @@ public class CubeConsole {
             String msg = "--------------------------------------------------------------------------";
 
             msg += "\n------ UNMANAGED ----";
-            for (ManagedElement e : agent.getRuntimeModel().getManagedElements(ManagedElement.UNMANAGED)) {
-                msg += showManagedElementInformation(e);
+            for (ManagedElement e : agent.getUnmanagedElements()) {
+                msg += e.getTextualDescription();
             }
             msg += "\n" + "------ UNCHECKED ----";
             for (ManagedElement e : agent.getRuntimeModel().getManagedElements(ManagedElement.UNCHECKED)) {
-                msg += showManagedElementInformation(e);
+                msg += e.getTextualDescription();
             }
             msg += "\n" + "------ VALID --------";
             for (ManagedElement e : agent.getRuntimeModel().getManagedElements(ManagedElement.VALID)) {
-                msg += showManagedElementInformation(e);
+                msg += e.getTextualDescription();
             }
 
             msg += "\n--------------------------------------------------------------------------";
             System.out.println(msg);
         }
-    }
-
-    private String showManagedElementInformation(ManagedElement e) {
-        String msg = "";
-        msg += "\n + " + e.getUri();
-        if (e.getProperties().size() > 0) {
-            msg += "\n    | PROPERTIES";
-            for (Property p : e.getProperties()) {
-                msg += "\n    |   " + p.getName() + "=" + p.getValue();
-            }
-        }
-        if (e.getReferences().size() > 0) {
-            msg += "\n    | REFERENCES";
-            for (Reference r : e.getReferences()) {
-                msg += "\n    |   " + r.getName() + ":";
-                for (String s : r.getReferencedElements()) {
-                    msg += "\n    |     " + s;
-                }
-            }
-        }
-        return msg;
     }
 
     @Descriptor("Show archtype")
@@ -171,15 +149,18 @@ public class CubeConsole {
                         typename = tmp[1];
                     }
                 }
-                Extension e = agent.getExtension(typens);
-                if (e != null) {
-                    ManagedElement me = e.newManagedElement(typename);
-                    if (me != null) {
-                        agent.getRuntimeModel().add(me);
-                        msg += "\n... instance created: " + me.getUri();
-                    }
+                ManagedElement me = null;
+                try {
+                    me = agent.newManagedElement(typens, typename, null);
+                } catch (InvalidNameException e) {
+                    e.printStackTrace();
+                } catch (PropertyExistException e) {
+                    e.printStackTrace();
                 }
-
+                if (me != null) {
+                    agent.getRuntimeModel().add(me);
+                    msg += "\n... instance created: " + me.getUri();
+                }
             } else {
                 msg += "\n... error!";
             }
@@ -213,43 +194,31 @@ public class CubeConsole {
                         typename = tmp[1];
                     }
                 }
-                Extension e = agent.getExtension(typens);
-                if (e != null) {
-                    Properties p = new Properties();
-                    if (properties != null && properties.length() > 0) {
-                        String[] tmp = properties.split(",");
-                        if (tmp != null && tmp.length > 0) {
-                            for (int i =0; i<tmp.length; i++) {
-                                String[] prop = tmp[i].split(":");
-                                if (prop != null && prop.length == 2) {
-                                    p.put(prop[0], prop[1]);
-                                }
-                            }
-                        }
+                Properties p = new Properties();
 
-                        ManagedElement me = null;
-                        try {
-                            me = e.newManagedElement(typename, p);
-                        } catch (InvalidNameException e1) {
-                            e1.printStackTrace();
-                        } catch (PropertyExistException e1) {
-                            e1.printStackTrace();
-                        }
-
-                        if (me != null) {
-                            agent.getRuntimeModel().add(me);
-                            msg += "\n... instance created: " + me.getUri();
-                        }
-                    } else {
-                        ManagedElement me = e.newManagedElement(typename);
-                        if (me != null) {
-                            agent.getRuntimeModel().add(me);
-                            msg += "\n... instance created: " + me.getUri();
+                String[] tmp = properties.split(",");
+                if (tmp != null && tmp.length > 0) {
+                    for (int i =0; i<tmp.length; i++) {
+                        String[] prop = tmp[i].split(":");
+                        if (prop != null && prop.length == 2) {
+                            p.put(prop[0], prop[1]);
                         }
                     }
-
                 }
 
+                ManagedElement me = null;
+                try {
+                    me = agent.newManagedElement(typens, typename, p);
+                } catch (InvalidNameException e) {
+                    e.printStackTrace();
+                } catch (PropertyExistException e) {
+                    e.printStackTrace();
+                }
+
+                if (me != null) {
+                    agent.getRuntimeModel().add(me);
+                    msg += "\n... instance created: " + me.getUri();
+                }
             } else {
                 msg += "\n... error!";
             }

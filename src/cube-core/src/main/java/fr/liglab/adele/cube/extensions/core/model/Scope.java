@@ -18,11 +18,11 @@
 package fr.liglab.adele.cube.extensions.core.model;
 
 import fr.liglab.adele.cube.agent.CubeAgent;
-import fr.liglab.adele.cube.agent.cmf.InvalidNameException;
-import fr.liglab.adele.cube.agent.cmf.PropertyExistException;
+import fr.liglab.adele.cube.cmf.InvalidNameException;
+import fr.liglab.adele.cube.cmf.PropertyExistException;
 import fr.liglab.adele.cube.agent.defaults.AbstractManagedElement;
-import fr.liglab.adele.cube.agent.cmf.PropertyNotExistException;
-import fr.liglab.adele.cube.agent.cmf.Reference;
+import fr.liglab.adele.cube.cmf.PropertyNotExistException;
+import fr.liglab.adele.cube.cmf.Reference;
 import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
 
 import java.util.ArrayList;

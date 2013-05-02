@@ -22,6 +22,9 @@ import fr.liglab.adele.cube.agent.*;
 import fr.liglab.adele.cube.CubePlatform;
 import fr.liglab.adele.cube.archetype.Archetype;
 import fr.liglab.adele.cube.archetype.ArchetypeException;
+import fr.liglab.adele.cube.cmf.InvalidNameException;
+import fr.liglab.adele.cube.cmf.ManagedElement;
+import fr.liglab.adele.cube.cmf.PropertyExistException;
 import fr.liglab.adele.cube.extensions.Extension;
 import fr.liglab.adele.cube.extensions.ExtensionFactory;
 import fr.liglab.adele.cube.util.parser.ArchetypeParser;
@@ -30,8 +33,7 @@ import fr.liglab.adele.cube.util.parser.ParseException;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Author: debbabi
@@ -77,6 +79,11 @@ public class CubeAgentImpl implements CubeAgent {
     private RuntimeModel runtimeModel;
 
     /**
+     * Runtime Model Controller.
+     */
+    private RuntimeModelController rmController;
+
+    /**
      * Runtime Model Resolver.
      */
     private Resolver resolver;
@@ -91,6 +98,8 @@ public class CubeAgentImpl implements CubeAgent {
     private String localId = "0";
 
     private static int index = 1;
+    private Map<String, ManagedElement> unmanagedElements;
+
 
     /**
      * Constructor
@@ -129,14 +138,19 @@ public class CubeAgentImpl implements CubeAgent {
         // communicator
         this.communicator = cp.getCommunicator(this.config.getCommunicatorName());
 
+        // Unmanaged elements
+        this.unmanagedElements = new HashMap<String, ManagedElement>();
+
         // Runtime Model
         this.runtimeModel = new RuntimeModelImpl(this);
+
+        this.rmController = new RuntimeModelControllerImpl(this);
 
         // Life Controller
         this.lifeController = new LifeControllerImpl(this);
 
         // resolver
-        resolver = new ResolverImpl(this);
+        this.resolver = new ResolverImpl(this);
 
         // get extensions
         this.extensions = new ArrayList<Extension>();
@@ -223,10 +237,56 @@ public class CubeAgentImpl implements CubeAgent {
         return this.runtimeModel;
     }
 
+    /**
+     * Creates a new Managed Element.
+     *
+     * @param namespace
+     * @param name
+     * @param properties
+     * @return
+     */
+    public ManagedElement newManagedElement(String namespace, String name, Properties properties) throws InvalidNameException, PropertyExistException {
+        Extension e = getExtension(namespace);
+        if (e != null) {
+            ManagedElement me = e.newManagedElement(name, properties);
+            if (me != null) {
+                ((AbstractManagedElement)me).updateState(ManagedElement.UNMANAGED);
+                unmanagedElements.put(me.getUUID(), me);
+                return me;
+            }
+        }
+        return null;
+    }
+
+    void deleteUnmanagedElement(String uuid) {
+        this.unmanagedElements.remove(uuid);
+    }
+
+    /**
+     * Gets the list of unmanaed elements.
+     * (which are not associated to the runtime model)
+     *
+     * @return
+     */
+    public List<ManagedElement> getUnmanagedElements() {
+        List<ManagedElement> result = new ArrayList<ManagedElement>();
+        for (Object key : this.unmanagedElements.keySet()) {
+            result.add(this.unmanagedElements.get(key));
+        }
+        return result;
+    }
+
+    /**
+     * Gets the Runtime Model Controller.
+     *
+     * @return
+     */
+    public RuntimeModelController getRuntimeModelController() {
+        return this.rmController;
+    }
+
     public void run() {
-        System.out.println("\n  +--------------------+");
-        System.out.println("  | RUNNING CUBE AGENT | " + uri.toString());
-        System.out.println("  +--------------------+\n");
+        System.out.println("[INFO] >>>>>>>>> starting agent: " + uri.toString());
         if (this.communicator != null) {
             try {
                 this.communicator.run(this);
@@ -242,7 +302,7 @@ public class CubeAgentImpl implements CubeAgent {
     }
 
     public void stop() {
-        System.out.println("[INFO] ... stopping CubeAgent: " + uri.toString());
+        System.out.println("[INFO] >>>>>>>>> stopping CubeAgent: " + uri.toString());
         for (Extension ex: this.getExtensions()) {
             ex.stop();
         }
@@ -253,7 +313,7 @@ public class CubeAgentImpl implements CubeAgent {
     }
 
     public void destroy() {
-        System.out.println("[INFO] ... destroying CubeAgent: " + uri.toString());
+        System.out.println("[INFO] >>>>>>>>> destroying CubeAgent: " + uri.toString());
         for (Extension ex: this.getExtensions()) {
             ex.destroy();
         }

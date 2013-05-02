@@ -19,8 +19,8 @@
 package fr.liglab.adele.cube.agent.defaults;
 
 import fr.liglab.adele.cube.agent.CubeAgent;
-import fr.liglab.adele.cube.agent.cmf.ManagedElement;
-import fr.liglab.adele.cube.agent.cmf.*;
+import fr.liglab.adele.cube.cmf.ManagedElement;
+import fr.liglab.adele.cube.cmf.*;
 import fr.liglab.adele.cube.util.Utils;
 
 import java.io.Serializable;
@@ -82,6 +82,23 @@ public abstract class AbstractManagedElement extends Observable implements Manag
      */
     public int getState() {
         return this.state;
+    }
+
+    /**
+     * Gets the instance current state as String.
+     *
+     * @return
+     */
+    public String getStateAsString() {
+        switch (this.state) {
+            case UNMANAGED:
+                return "UNMANAGED";
+            case UNCHECKED:
+                return "UNCHECKED";
+            case VALID:
+                return "VALIRD";
+        }
+        return "";
     }
 
     public AbstractManagedElement(CubeAgent agent) {
@@ -209,6 +226,13 @@ public abstract class AbstractManagedElement extends Observable implements Manag
         return null;
     }
 
+    int validate() {
+        int old = updateState(VALID);
+        setChanged();
+        notifyObservers();
+        return old;
+    }
+
     /**
      * Get Managed Element References
      * @return
@@ -240,6 +264,32 @@ public abstract class AbstractManagedElement extends Observable implements Manag
             this.references.add(r);
         }
         return r;
+    }
+
+    /**
+     * Gets a textual description of the element.
+     *
+     * @return
+     */
+    public String getTextualDescription() {
+        String msg = "";
+        msg += "\n + " + this.getUri();
+        if (this.getProperties().size() > 0) {
+            msg += "\n    | PROPERTIES";
+            for (Property p : this.getProperties()) {
+                msg += "\n    |   " + p.getName() + "=" + p.getValue();
+            }
+        }
+        if (this.getReferences().size() > 0) {
+            msg += "\n    | REFERENCES";
+            for (Reference r : this.getReferences()) {
+                msg += "\n    |   " + r.getName() + ":";
+                for (String s : r.getReferencedElements()) {
+                    msg += "\n    |     " + s;
+                }
+            }
+        }
+        return msg;
     }
 
     /*
