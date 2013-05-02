@@ -30,7 +30,6 @@
 
 	<modules>
         <module>osgi-extension</module>
-        <module>console-extension</module>
 	</modules>	
 
 </project>

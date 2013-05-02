@@ -1,2 +1,2 @@
-newi 1 fr.liglab.adele.cube.core:Component
+newi 1 component
 newi 1 fr.liglab.adele.cube.core:Component core.component.type:A

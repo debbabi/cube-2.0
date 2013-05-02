@@ -28,6 +28,7 @@ import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Author: debbabi
@@ -45,6 +46,10 @@ public class Node extends AbstractManagedElement {
 
     public Node(CubeAgent agent) {
         super(agent);
+    }
+
+    public Node(CubeAgent agent, Properties properties) throws PropertyExistException, InvalidNameException {
+        super(agent, properties);
     }
 
     /**

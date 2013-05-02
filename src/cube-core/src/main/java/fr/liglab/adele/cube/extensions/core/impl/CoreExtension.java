@@ -20,10 +20,16 @@ package fr.liglab.adele.cube.extensions.core.impl;
 
 import fr.liglab.adele.cube.agent.CubeAgent;
 import fr.liglab.adele.cube.agent.ConstraintResolver;
+import fr.liglab.adele.cube.agent.cmf.InvalidNameException;
+import fr.liglab.adele.cube.agent.cmf.ManagedElement;
+import fr.liglab.adele.cube.agent.cmf.PropertyExistException;
 import fr.liglab.adele.cube.extensions.AbstractExtension;
 import fr.liglab.adele.cube.extensions.ExtensionFactory;
 import fr.liglab.adele.cube.extensions.core.constraints.*;
+import fr.liglab.adele.cube.extensions.core.model.Component;
 import fr.liglab.adele.cube.extensions.core.model.Master;
+import fr.liglab.adele.cube.extensions.core.model.Node;
+import fr.liglab.adele.cube.extensions.core.model.Scope;
 
 import java.util.Properties;
 
@@ -58,6 +64,55 @@ public class CoreExtension extends AbstractExtension {
 
     public void destroy() {
 
+    }
+
+    /**
+     * Creates a new Managed Element Instance of the given name;
+     *
+     * @param element_name
+     * @return
+     */
+    public ManagedElement newManagedElement(String element_name) {
+        if (element_name != null) {
+            if (element_name.equalsIgnoreCase(Scope.NAME)) {
+                return new Scope(getCubeAgent());
+            }
+            if (element_name.equalsIgnoreCase(Node.NAME)) {
+                return new Node(getCubeAgent());
+            }
+            if (element_name.equalsIgnoreCase(Master.NAME)) {
+                return new Master(getCubeAgent());
+            }
+            if (element_name.equalsIgnoreCase(Component.NAME)) {
+                return new Component(getCubeAgent());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Creates a new Managed Element Instance of the given name and the given properties.
+     *
+     * @param element_name
+     * @param properties
+     * @return
+     */
+    public ManagedElement newManagedElement(String element_name, Properties properties) throws InvalidNameException, PropertyExistException {
+        if (element_name != null) {
+            if (element_name.equalsIgnoreCase(Scope.NAME)) {
+                return new Scope(getCubeAgent(), properties);
+            }
+            if (element_name.equalsIgnoreCase(Node.NAME)) {
+                return new Node(getCubeAgent(), properties);
+            }
+            if (element_name.equalsIgnoreCase(Master.NAME)) {
+                return new Master(getCubeAgent(), properties);
+            }
+            if (element_name.equalsIgnoreCase(Component.NAME)) {
+                return new Component(getCubeAgent(), properties);
+            }
+        }
+        return null;
     }
 
     public ConstraintResolver getConstraintResolver(String name) {

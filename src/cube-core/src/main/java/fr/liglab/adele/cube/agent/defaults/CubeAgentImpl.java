@@ -23,13 +23,11 @@ import fr.liglab.adele.cube.CubePlatform;
 import fr.liglab.adele.cube.archetype.Archetype;
 import fr.liglab.adele.cube.archetype.ArchetypeException;
 import fr.liglab.adele.cube.extensions.Extension;
-import fr.liglab.adele.cube.extensions.ExtensionBundle;
-import fr.liglab.adele.cube.util.Utils;
+import fr.liglab.adele.cube.extensions.ExtensionFactory;
 import fr.liglab.adele.cube.util.parser.ArchetypeParser;
 import fr.liglab.adele.cube.util.parser.ArchtypeParsingException;
 import fr.liglab.adele.cube.util.parser.ParseException;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -87,6 +85,12 @@ public class CubeAgentImpl implements CubeAgent {
      * Life Controller.
      */
     private LifeController lifeController;
+    /**
+     * Local Id
+     */
+    private String localId = "0";
+
+    private static int index = 1;
 
     /**
      * Constructor
@@ -99,6 +103,8 @@ public class CubeAgentImpl implements CubeAgent {
         this.platform = cp;
 
         this.config = config;
+
+        this.localId = "" + index++;
 
         if (config == null)
             throw new CubeAgentException("Cube Agent's Configuration error!");
@@ -137,7 +143,7 @@ public class CubeAgentImpl implements CubeAgent {
         for (ExtensionConfig ex : this.config.getExtensions()) {
             String id = ex.getId();
             if (id != null && id.length() > 0) {
-                ExtensionBundle eb = getPlatform().getExtensionBundle(id);
+                ExtensionFactory eb = getPlatform().getExtensionBundle(id);
                 if (eb != null) {
                     Extension extension = eb.getExtensionInstance(this, ex.getProperties());
                     if (extension != null) {
@@ -154,6 +160,15 @@ public class CubeAgentImpl implements CubeAgent {
 
     public String getUri() {
         return this.uri;
+    }
+
+    /**
+     * Gets the local id of the current Cube Agent
+     *
+     * @return
+     */
+    public String getLocalId() {
+        return this.localId;
     }
 
     public CubePlatform getPlatform() {

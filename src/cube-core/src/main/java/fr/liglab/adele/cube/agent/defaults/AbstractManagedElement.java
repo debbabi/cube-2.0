@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
+import java.util.Properties;
 
 /**
  * Author: debbabi
@@ -88,6 +89,16 @@ public abstract class AbstractManagedElement extends Observable implements Manag
         this.uuid = Utils.GenerateUUID();
     }
 
+    public AbstractManagedElement(CubeAgent agent, Properties properties) throws PropertyExistException, InvalidNameException{
+        setCubeAgent(agent.getUri());
+        this.uuid = Utils.GenerateUUID();
+        if (properties != null) {
+            for (Object key : properties.keySet()) {
+                addProperty(key.toString(), properties.get(key).toString());
+            }
+        }
+    }
+
     int updateState(int newState) {
         int oldState = this.state;
         this.state = newState;
@@ -119,7 +130,7 @@ public abstract class AbstractManagedElement extends Observable implements Manag
      * @return
      */
     public String getUri() {
-        return getCubeAgent() + "/" + getUUID();
+        return getCubeAgent() + "/" + getName().toLowerCase() + "/" + getUUID();
     }
 
     /**

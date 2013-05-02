@@ -104,7 +104,7 @@
                             fr.liglab.adele.cube.agent.defaults.communicator,
                             fr.liglab.adele.cube.agent.defaults.resolver
 
-						</Private-Package>
+                        </Private-Package>
 						<Include-Resource>
 						</Include-Resource>
 					</instructions>

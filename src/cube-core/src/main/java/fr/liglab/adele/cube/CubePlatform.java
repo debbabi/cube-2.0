@@ -21,7 +21,7 @@ package fr.liglab.adele.cube;
 import fr.liglab.adele.cube.agent.Communicator;
 import fr.liglab.adele.cube.agent.CubeAgent;
 import fr.liglab.adele.cube.agent.CubeAgentException;
-import fr.liglab.adele.cube.extensions.ExtensionBundle;
+import fr.liglab.adele.cube.extensions.ExtensionFactory;
 import org.osgi.framework.BundleContext;
 
 import java.util.List;
@@ -67,6 +67,12 @@ public interface CubePlatform {
     public List<String> getCubeAgents();
 
     /**
+     * Gets Cube Agents in this local OSGi Platform.
+     * @return List of Cube Agent' local Ids
+     */
+    public List<String> getCubeAgentLocalIds();
+
+    /**
      * Gets the Cube Agent of the given URI.
      * @param uri
      * @return
@@ -74,12 +80,19 @@ public interface CubePlatform {
     public CubeAgent getCubeAgent(String uri);
 
     /**
+     * Gets the Cube Agent of the given local Id.
+     * @param localId
+     * @return
+     */
+    public CubeAgent getCubeAgentByLocalId(String localId);
+
+    /**
      * Gets the Extension Bundle has the given id.
      * Its OSGi bundle should be already deployed.
      * @param id
      * @return
      */
-    public ExtensionBundle getExtensionBundle(String id);
+    public ExtensionFactory getExtensionBundle(String id);
 
     /**
      * Gets the Communicator having the given id.

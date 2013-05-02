@@ -24,7 +24,7 @@ import fr.liglab.adele.cube.CubePlatform;
 import fr.liglab.adele.cube.agent.AgentConfig;
 import fr.liglab.adele.cube.agent.CubeAgentException;
 import fr.liglab.adele.cube.agent.defaults.CubeAgentImpl;
-import fr.liglab.adele.cube.extensions.ExtensionBundle;
+import fr.liglab.adele.cube.extensions.ExtensionFactory;
 import fr.liglab.adele.cube.util.parser.AgentConfigParser;
 import fr.liglab.adele.cube.util.parser.ParseException;
 import org.apache.felix.ipojo.annotations.*;
@@ -61,8 +61,8 @@ public class CubePlatformImpl implements CubePlatform {
     /**
      * Extension Factories
      */
-    @Requires(specification="fr.liglab.adele.cube.extensions.ExtensionBundle")
-    private List<ExtensionBundle> extensionBundles;
+    @Requires(specification="fr.liglab.adele.cube.extensions.ExtensionFactory")
+    private List<ExtensionFactory> extensionBundles;
 
     @Requires(specification = "fr.liglab.adele.cube.agent.Communicator")
     private List<Communicator> communicators;
@@ -73,23 +73,23 @@ public class CubePlatformImpl implements CubePlatform {
      */
     public CubePlatformImpl(BundleContext btx) {
         this.bundleContext = btx;
-        extensionBundles = new ArrayList<ExtensionBundle>();
+        extensionBundles = new ArrayList<ExtensionFactory>();
     }
-
 
     /**
      * Called when the Cube Platform starts on the local OSGi Platform.
      */
     @Validate
     public void starting() {
-        System.out.println(" ");
-        System.out.println("");
-        System.out.println("    _______              ");
-        System.out.println("   /|      |             ");
-        System.out.println("  | | CUBE |...Version:  ");
-        System.out.println("  | |______|   " + getVersion());
-        System.out.println("  |/______/              ");
-        System.out.println("");
+        String msg = "\n";
+
+        msg += "\n    _______              ";
+        msg += "\n   /|      |             ";
+        msg += "\n  | | CUBE |...Version:  ";
+        msg += "\n  | |______|   " + getVersion();
+        msg += "\n  |/______/              ";
+        msg += "\n";
+        System.out.println(msg);
     }
 
     /**
@@ -198,6 +198,19 @@ public class CubePlatformImpl implements CubePlatform {
     }
 
     /**
+     * Gets Cube Agents in this local OSGi Platform.
+     *
+     * @return List of Cube Agent' local Ids
+     */
+    public List<String> getCubeAgentLocalIds() {
+        List<String> ids = new ArrayList<String>();
+        for (String key: cubeAgents.keySet()) {
+            ids.add(cubeAgents.get(key).getLocalId());
+        }
+        return ids;
+    }
+
+    /**
      * Get the Cube Agent of the given URI.
      *
      * @param uri
@@ -208,15 +221,32 @@ public class CubePlatformImpl implements CubePlatform {
     }
 
     /**
+     * Gets the Cube Agent of the given local Id.
+     *
+     * @param localId
+     * @return
+     */
+    public CubeAgent getCubeAgentByLocalId(String localId) {
+        if (localId != null) {
+            for (String key: cubeAgents.keySet()) {
+                if (cubeAgents.get(key).getLocalId().equalsIgnoreCase(localId)) {
+                    return cubeAgents.get(key);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Get the Extension Bundle has the given id.
      * Its OSGi bundle should be already deployed.
      *
      * @param id
      * @return
      */
-    public ExtensionBundle getExtensionBundle(String id) {
+    public ExtensionFactory getExtensionBundle(String id) {
         if (id != null && id.length() > 0) {
-            for (ExtensionBundle eb : this.extensionBundles) {
+            for (ExtensionFactory eb : this.extensionBundles) {
                 if (eb.getNamespace().equalsIgnoreCase(id))
                     return eb;
             }

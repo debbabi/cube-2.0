@@ -27,6 +27,7 @@ import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Author: debbabi
@@ -45,6 +46,10 @@ public class Scope extends AbstractManagedElement {
 
     public Scope(CubeAgent agent) {
         super(agent);
+    }
+
+    public Scope(CubeAgent agent, Properties properties) throws PropertyExistException, InvalidNameException {
+        super(agent, properties);
     }
 
     /**

@@ -21,7 +21,6 @@ package fr.liglab.adele.cube.util.parser;
 import fr.liglab.adele.cube.CubeLogger;
 import fr.liglab.adele.cube.CubePlatform;
 import fr.liglab.adele.cube.archetype.*;
-import fr.liglab.adele.cube.extensions.ExtensionBundle;
 import fr.liglab.adele.cube.util.xml.XMLElement;
 import fr.liglab.adele.cube.util.xml.XMLParser;
 import org.osgi.framework.BundleContext;

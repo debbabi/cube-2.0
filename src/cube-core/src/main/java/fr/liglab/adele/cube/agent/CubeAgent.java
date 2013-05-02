@@ -20,6 +20,12 @@ public interface CubeAgent {
     public String getUri();
 
     /**
+     * Gets the local id of the current Cube Agent
+     * @return
+     */
+    public String getLocalId();
+
+    /**
      * Gets the platform
      * @return
      */

@@ -26,6 +26,8 @@ import fr.liglab.adele.cube.agent.cmf.Reference;
 import fr.liglab.adele.cube.agent.defaults.AbstractManagedElement;
 import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
 
+import java.util.Properties;
+
 /**
  * Author: debbabi
  * Date: 4/27/13
@@ -41,6 +43,10 @@ public class Master extends AbstractManagedElement {
 
     public Master(CubeAgent agent) {
         super(agent);
+    }
+
+    public Master(CubeAgent agent, Properties properties) throws PropertyExistException, InvalidNameException {
+        super(agent, properties);
     }
 
 
