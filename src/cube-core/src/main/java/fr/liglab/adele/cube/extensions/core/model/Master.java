@@ -24,7 +24,7 @@ import fr.liglab.adele.cube.agent.cmf.PropertyExistException;
 import fr.liglab.adele.cube.agent.cmf.PropertyNotExistException;
 import fr.liglab.adele.cube.agent.cmf.Reference;
 import fr.liglab.adele.cube.agent.defaults.AbstractManagedElement;
-import fr.liglab.adele.cube.extensions.core.CoreExtensionBundle;
+import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
 
 /**
  * Author: debbabi
@@ -97,7 +97,7 @@ public class Master extends AbstractManagedElement {
     }
 
     public String getNamespace() {
-        return CoreExtensionBundle.NAMESPACE;
+        return CoreExtensionFactory.NAMESPACE;
     }
 
     public String getName() {

@@ -33,10 +33,10 @@ public abstract class AbstractExtension implements Extension {
     private String uri = null;
 
     private CubeAgent agent = null;
-    private ExtensionBundle bundle = null;
+    private ExtensionFactory bundle = null;
     private Properties properties = new Properties();
 
-    public AbstractExtension(CubeAgent agent, ExtensionBundle bundle, Properties properties) {
+    public AbstractExtension(CubeAgent agent, ExtensionFactory bundle, Properties properties) {
         this.uri = agent.getUri() + "/ext/" + bundle.getName();
         this.agent = agent;
         this.bundle = bundle;
@@ -55,7 +55,7 @@ public abstract class AbstractExtension implements Extension {
         return this.agent;
     }
 
-    public ExtensionBundle getExtensionBundle() {
+    public ExtensionFactory getExtensionBundle() {
         return this.bundle;
     }
 

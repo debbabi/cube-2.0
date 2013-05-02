@@ -20,11 +20,9 @@ package fr.liglab.adele.cube.extensions.core.constraints;
 
 import fr.liglab.adele.cube.agent.ConstraintResolver;
 import fr.liglab.adele.cube.agent.cmf.InvalidNameException;
-import fr.liglab.adele.cube.agent.cmf.ManagedElement;
 import fr.liglab.adele.cube.agent.cmf.PropertyExistException;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
 import fr.liglab.adele.cube.extensions.core.model.Component;
-import fr.liglab.adele.cube.extensions.core.model.Node;
 
 /**
  * Author: debbabi

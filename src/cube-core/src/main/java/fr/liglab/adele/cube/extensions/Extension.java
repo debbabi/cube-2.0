@@ -14,7 +14,7 @@ public interface Extension {
 
     public String getUri();
     public CubeAgent getCubeAgent();
-    public ExtensionBundle getExtensionBundle();
+    public ExtensionFactory getExtensionBundle();
     public Properties getProperties();
 
     public void run();

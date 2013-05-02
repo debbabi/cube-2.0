@@ -21,7 +21,7 @@ package fr.liglab.adele.cube.extensions.core.impl;
 import fr.liglab.adele.cube.agent.CubeAgent;
 import fr.liglab.adele.cube.agent.ConstraintResolver;
 import fr.liglab.adele.cube.extensions.AbstractExtension;
-import fr.liglab.adele.cube.extensions.ExtensionBundle;
+import fr.liglab.adele.cube.extensions.ExtensionFactory;
 import fr.liglab.adele.cube.extensions.core.constraints.*;
 import fr.liglab.adele.cube.extensions.core.model.Master;
 
@@ -35,7 +35,7 @@ import java.util.Properties;
 public class CoreExtension extends AbstractExtension {
 
 
-    public CoreExtension(CubeAgent agent, ExtensionBundle bundle, Properties properties) {
+    public CoreExtension(CubeAgent agent, ExtensionFactory bundle, Properties properties) {
         super(agent, bundle, properties);
     }
 
