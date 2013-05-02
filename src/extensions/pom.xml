@@ -29,7 +29,7 @@
 	<version>2.0</version>
 
 	<modules>
-        <module>osgi-extension</module>
+        <module>cube-osgi-extension</module>
 	</modules>	
 
 </project>

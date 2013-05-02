@@ -20,7 +20,9 @@ package fr.liglab.adele.cube.extensions.osgi.impl;
 
 import fr.liglab.adele.cube.agent.ConstraintResolver;
 import fr.liglab.adele.cube.agent.CubeAgent;
+import fr.liglab.adele.cube.agent.cmf.InvalidNameException;
 import fr.liglab.adele.cube.agent.cmf.ManagedElement;
+import fr.liglab.adele.cube.agent.cmf.PropertyExistException;
 import fr.liglab.adele.cube.extensions.AbstractExtension;
 import fr.liglab.adele.cube.extensions.ExtensionFactory;
 import fr.liglab.adele.cube.extensions.core.model.Node;
@@ -74,6 +76,17 @@ public class OSGiExtension extends AbstractExtension {
      * @return
      */
     public ManagedElement newManagedElement(String element_name) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
+     * Creates a new Managed Element Instance of the given name and the given properties.
+     *
+     * @param element_name
+     * @param properties
+     * @return
+     */
+    public ManagedElement newManagedElement(String element_name, Properties properties) throws InvalidNameException, PropertyExistException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }
