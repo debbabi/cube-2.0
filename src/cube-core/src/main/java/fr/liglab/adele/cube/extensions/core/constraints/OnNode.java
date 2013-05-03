@@ -20,7 +20,12 @@ package fr.liglab.adele.cube.extensions.core.constraints;
 
 import fr.liglab.adele.cube.agent.ConstraintResolver;
 import fr.liglab.adele.cube.agent.CubeAgent;
+import fr.liglab.adele.cube.agent.RuntimeModelController;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
+import fr.liglab.adele.cube.cmf.InvalidNameException;
+import fr.liglab.adele.cube.extensions.core.model.Component;
+import fr.liglab.adele.cube.extensions.core.model.Node;
+import fr.liglab.adele.cube.extensions.core.model.Scope;
 
 /**
  * Author: debbabi
@@ -36,12 +41,32 @@ public class OnNode implements ConstraintResolver {
     }
 
     public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        Object instance1_uuid = subjectVariable.getValue();
+        if (instance1_uuid != null) {
+            RuntimeModelController rmController = agent.getRuntimeModelController();
+            if (rmController != null) {
+                for (String s : rmController.getReferencedElements(instance1_uuid.toString(), Component.CORE_COMPONENT_NODE)) {
+                    objectVariable.setValue(s);
+                }
+            }
+        }
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        System.out.println("** checking onnode..");
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        Object instance1_uuid = subjectVariable.getValue();
+        Object instance2_uuid = objectVariable.getValue();
+
+        if (instance1_uuid != null && instance2_uuid != null) {
+            RuntimeModelController rmController = agent.getRuntimeModelController();
+            if (rmController != null) {
+                if (rmController.hasReferencedElements(instance1_uuid.toString(), Component.CORE_COMPONENT_NODE, instance2_uuid.toString())) {
+                    if (rmController.hasReferencedElements(instance2_uuid.toString(), Node.CORE_NODE_COMPONENTS, instance1_uuid.toString())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -53,16 +78,7 @@ public class OnNode implements ConstraintResolver {
      * @param subjectVariable
      * @param objectVariable
      */
-    public boolean applyCharacteristic(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        if (subjectVariable != null && objectVariable != null && objectVariable.values.size() > 0) {
-            //String s = objectVariable.getTestedValue();
-            /*if (s != null) {
-                subjectVariable.setCubeAgent(s);
-                // TODO: Component node..
-
-                return true;
-            } */
-        }
+    public boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;
     }
 
@@ -74,8 +90,25 @@ public class OnNode implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean applyObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    public boolean performObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+        Object instance1_uuid = subjectVariable.getValue();
+        Object instance2_uuid = objectVariable.getValue();
+
+        if (instance1_uuid != null && instance2_uuid != null) {
+            RuntimeModelController rmController = agent.getRuntimeModelController();
+            if (rmController != null) {
+                try {
+                    if (rmController.addReference(instance1_uuid.toString(), Component.CORE_COMPONENT_NODE, instance2_uuid.toString())) {
+                        if (rmController.addReference(instance2_uuid.toString(), Node.CORE_NODE_COMPONENTS, instance1_uuid.toString())) {
+                            return true;
+                        }
+                    }
+                } catch (InvalidNameException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        return false;
     }
 
 
@@ -88,7 +121,20 @@ public class OnNode implements ConstraintResolver {
      * @return
      */
     public boolean cancelObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        Object instance1_uuid = subjectVariable.getValue();
+        Object instance2_uuid = objectVariable.getValue();
+
+        if (instance1_uuid != null && instance2_uuid != null) {
+            RuntimeModelController rmController = agent.getRuntimeModelController();
+            if (rmController != null) {
+                if (rmController.removeReference(instance1_uuid.toString(), Component.CORE_COMPONENT_NODE, instance2_uuid.toString())) {
+                    if (rmController.removeReference(instance2_uuid.toString(), Node.CORE_NODE_COMPONENTS, instance1_uuid.toString())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**

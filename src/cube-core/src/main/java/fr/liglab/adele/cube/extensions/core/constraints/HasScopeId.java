@@ -20,9 +20,12 @@ package fr.liglab.adele.cube.extensions.core.constraints;
 
 import fr.liglab.adele.cube.agent.ConstraintResolver;
 import fr.liglab.adele.cube.agent.CubeAgent;
+import fr.liglab.adele.cube.agent.RuntimeModelController;
 import fr.liglab.adele.cube.cmf.InvalidNameException;
 import fr.liglab.adele.cube.cmf.PropertyExistException;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
+import fr.liglab.adele.cube.cmf.PropertyNotExistException;
+import fr.liglab.adele.cube.extensions.core.model.Node;
 import fr.liglab.adele.cube.extensions.core.model.Scope;
 
 /**
@@ -39,34 +42,46 @@ public class HasScopeId implements ConstraintResolver {
     }
 
     public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // no initialization for Unary constraints
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        System.out.println("** checking hasscopeid..");
-        /*
-        if (subjectVariable != null && subjectVariable.getValue() != null &&
-                objectVariable != null && objectVariable.getValue() != null) {
-            if (subjectVariable.getValue() instanceof ManagedElement) {
-                String scopeid = ((ManagedElement)subjectVariable.getValue()).getProperty(Scope.CORE_SCOPE_ID);
-                if (scopeid != null && scopeid.equalsIgnoreCase(objectVariable.getValue().toString())) {
+        Object instance1_uuid = subjectVariable.getValue();
+        Object scopeid = objectVariable.getValue();
+
+        if (instance1_uuid != null && scopeid != null) {
+            RuntimeModelController rmController = agent.getRuntimeModelController();
+            if (rmController != null) {
+
+                String value = rmController.getPropertyValue(instance1_uuid.toString(), Scope.CORE_SCOPE_ID);
+                if (value != null && value.equalsIgnoreCase(scopeid.toString())) {
                     return true;
                 }
             }
-        } */
+        }
         return false;
     }
 
-    public boolean applyCharacteristic(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        if (objectVariable != null && objectVariable.getValue() != null) {
+    public boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+        if (subjectVariable != null && objectVariable != null && objectVariable.getValue() != null) {
             if (subjectVariable.getProperty(Scope.CORE_SCOPE_ID) == null) {
                 try {
                     subjectVariable.addProperty(Scope.CORE_SCOPE_ID, objectVariable.getValue().toString());
                     return true;
                 } catch (PropertyExistException e) {
-                    e.printStackTrace();
+                    try {
+                        subjectVariable.updateProperty(Scope.CORE_SCOPE_ID, objectVariable.getValue().toString());
+                    } catch (PropertyNotExistException e1) {
+                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
                 } catch (InvalidNameException e) {
                     e.printStackTrace();
+                }
+            } else {
+                try {
+                    subjectVariable.updateProperty(Scope.CORE_SCOPE_ID, objectVariable.getValue().toString());
+                } catch (PropertyNotExistException e1) {
+                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
             }
         }
@@ -81,7 +96,7 @@ public class HasScopeId implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean applyObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+    public boolean performObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

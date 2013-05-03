@@ -23,20 +23,20 @@ import fr.liglab.adele.cube.agent.CubeAgent;
 import fr.liglab.adele.cube.agent.RuntimeModelController;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
 import fr.liglab.adele.cube.cmf.InvalidNameException;
-
+import fr.liglab.adele.cube.cmf.PropertyExistException;
+import fr.liglab.adele.cube.extensions.core.model.Component;
 import fr.liglab.adele.cube.extensions.core.model.Node;
 import fr.liglab.adele.cube.extensions.core.model.Scope;
 
-import java.util.List;
 
 /**
  * Author: debbabi
- * Date: 4/29/13
- * Time: 2:37 AM
+ * Date: 4/28/13
+ * Time: 7:34 PM
  */
-public class InScope implements ConstraintResolver {
+public class InAgent implements ConstraintResolver {
 
-    private static ConstraintResolver instance = new InScope();
+    private static ConstraintResolver instance = new InAgent();
 
     public static ConstraintResolver instance() {
         return instance;
@@ -47,8 +47,9 @@ public class InScope implements ConstraintResolver {
         if (instance1_uuid != null) {
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                for (String s : rmController.getReferencedElements(instance1_uuid.toString(), Node.CORE_NODE_SCOPE)) {
-                    objectVariable.setValue(s);
+                String agentUri = rmController.getAgentOfElement(instance1_uuid.toString());
+                if (agentUri != null) {
+                    objectVariable.setValue(agentUri);
                 }
             }
         }
@@ -56,32 +57,25 @@ public class InScope implements ConstraintResolver {
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         Object instance1_uuid = subjectVariable.getValue();
-        Object instance2_uuid = objectVariable.getValue();
+        Object agentUri = objectVariable.getValue();
 
-        if (instance1_uuid != null && instance2_uuid != null) {
+        if (instance1_uuid != null && agentUri != null) {
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                if (rmController.hasReferencedElements(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
-                    if (rmController.hasReferencedElements(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
-                        return true;
-                    }
+                String value = rmController.getAgentOfElement(instance1_uuid.toString());
+                if (value != null && value.equalsIgnoreCase(agentUri.toString())) {
+                    return true;
                 }
             }
         }
         return false;
     }
 
-    /**
-     * Applies the predicate information located on the objectVariable, on the subjectVariable
-     * to limit the research domain space.
-     * <p/>
-     * It should be only implemented for UnaryConstraints.
-     *
-     * @param subjectVariable
-     * @param objectVariable
-     */
     public boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        if (subjectVariable != null && objectVariable != null && objectVariable.getValue() != null) {
+            subjectVariable.setCubeAgent(objectVariable.getValue().toString());
+            return true;
+        }
         return false;
     }
 
@@ -94,24 +88,7 @@ public class InScope implements ConstraintResolver {
      * @return
      */
     public boolean performObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        Object instance1_uuid = subjectVariable.getValue();
-        Object instance2_uuid = objectVariable.getValue();
-
-        if (instance1_uuid != null && instance2_uuid != null) {
-            RuntimeModelController rmController = agent.getRuntimeModelController();
-            if (rmController != null) {
-                try {
-                    if (rmController.addReference(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
-                        if (rmController.addReference(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
-                            return true;
-                        }
-                    }
-                } catch (InvalidNameException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-        return false;
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     /**
@@ -123,20 +100,7 @@ public class InScope implements ConstraintResolver {
      * @return
      */
     public boolean cancelObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        Object instance1_uuid = subjectVariable.getValue();
-        Object instance2_uuid = objectVariable.getValue();
-
-        if (instance1_uuid != null && instance2_uuid != null) {
-            RuntimeModelController rmController = agent.getRuntimeModelController();
-            if (rmController != null) {
-                if (rmController.removeReference(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
-                    if (rmController.removeReference(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     /**

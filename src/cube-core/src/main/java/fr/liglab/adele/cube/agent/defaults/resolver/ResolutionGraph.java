@@ -19,15 +19,11 @@
 package fr.liglab.adele.cube.agent.defaults.resolver;
 
 import fr.liglab.adele.cube.agent.CubeAgent;
-import fr.liglab.adele.cube.cmf.InvalidNameException;
-import fr.liglab.adele.cube.cmf.ManagedElement;
-import fr.liglab.adele.cube.cmf.Property;
+import fr.liglab.adele.cube.cmf.*;
 import fr.liglab.adele.cube.archetype.Archetype;
 import fr.liglab.adele.cube.archetype.Characteristic;
 import fr.liglab.adele.cube.archetype.Element;
 import fr.liglab.adele.cube.archetype.Objective;
-import fr.liglab.adele.cube.cmf.PropertyExistException;
-import fr.liglab.adele.cube.extensions.Extension;
 
 import java.util.Properties;
 import java.util.Stack;
@@ -81,6 +77,7 @@ public class ResolutionGraph {
 
     private CubeAgent agent;
 
+
     public ResolutionGraph(CubeAgent agent) {
         this.agent = agent;
     }
@@ -106,7 +103,10 @@ public class ResolutionGraph {
             // For each objective constraint related to the root variable,
             // we try to resolve the specified constraints.
             for (Constraint o : root.getObjectiveConstraints()) {
-                resolveObjective(o);
+                if (resolveObjective(o) == false) {
+                    // TODO: cancel applied constraints!!!!
+                    return false;
+                }
             }
         }
         return true;
@@ -157,16 +157,32 @@ public class ResolutionGraph {
             // resolve and apply binary objective here..
             // 1. find value for the object variable
             info("trying to find value for the object variable of the objective constraint '" + objective.getName() + "'");
-            String uuid = find(objective.getObjectVariable());
+
+            String uuid = null;
+            if (objective.getResolutionStrategy() == Constraint.FIND) {
+                uuid = find(objective.getObjectVariable());
+            } else if (objective.getResolutionStrategy() == Constraint.FIND_OR_CREATE) {
+                uuid = findOrCreate(objective.getObjectVariable());
+            } else if (objective.getResolutionStrategy() == Constraint.CREATE) {
+                uuid = create(objective.getObjectVariable());
+            }
+
             while (uuid != null) {
                 info("find: " + uuid);
-                objective.applyObjective(this.agent);
-                /*if (evaluateValue(objective.getObjectVariable())) {
+                objective.performObjective(this.agent);
+                if (evaluateValue(objective.getObjectVariable())) {
                     return true;
-                } */
-                return true;
-                //objective.cancelObjective(this.agent);
-                //uuid = find(objective.getObjectVariable());
+                }
+                objective.cancelObjective(this.agent);
+
+                // find new value
+                if (objective.getResolutionStrategy() == Constraint.FIND) {
+                    uuid = find(objective.getObjectVariable());
+                } else if (objective.getResolutionStrategy() == Constraint.FIND_OR_CREATE) {
+                    uuid = findOrCreate(objective.getObjectVariable());
+                } else if (objective.getResolutionStrategy() == Constraint.CREATE) {
+                    uuid = create(objective.getObjectVariable());
+                }
             }
 
             /*
@@ -179,8 +195,8 @@ public class ResolutionGraph {
 
         }  else {
             // apply unary objective here..
-            // TODO: c.applyObjective()
-            objective.applyObjective(this.agent); // always?!
+            // TODO: c.performObjective()
+            objective.performObjective(this.agent); // always?!
             return true;
         }
     }
@@ -198,7 +214,91 @@ public class ResolutionGraph {
             case 0: {
                 info("step 0 : applying characteristics..");
                 // apply characteristic constraints on the current variable to minimize the research domain.
-                applyCharacteristics(v);
+                applyUnaryDescriptions(v);
+                // go directly to step 1 below
+                v.findStep++;
+            }
+            case 1: {
+                info("step 1 : find using characteristics..");
+                // find using the current configuration.
+                String uuid = findUsingCharacteristics(v);
+                while (uuid != null) {
+                    v.values.push(uuid);
+                    //v.addAlreadyTestedValue(uuid);
+                    //if (evaluateValue(v)) {
+                        return uuid;
+                    //} else {
+                        // add to already tested values
+                        // find again using the same technique until no value will be returned!
+                    //    uuid = findUsingCharacteristics(v);
+                    //}
+                }
+                info("step 1 : not found using characteristics!");
+                v.findStep++;
+            }
+            case 2: {
+                // find from related constraints.
+                //String uuid = findUsingConstraints(v);
+                info("step 2 : find using binary constraints..");
+                for (Constraint bc : v.getBinaryConstraints()) {
+                    Variable ov = bc.getObjectVariable();
+                    if (ov != null) {
+
+                        if (ov.getValue() == null) {
+                            String result = find(ov);
+                            while (result != null) {
+                                String uuid = bc.find(agent);
+                                if (uuid != null) {
+                                    v.values.push(uuid);
+                                    return uuid;
+                                }
+                                result = find(ov);
+                            }
+                            // problem, we cannot find object variable!
+                            info("step 2 : not found using binary constraints!");
+                            v.findStep++;
+                            //return null;
+
+                        } else {
+                            String result = ov.getValue().toString();
+                            while (result != null) {
+                                String uuid = bc.find(agent);
+                                if (uuid != null) {
+                                    v.values.push(uuid);
+                                    return uuid;
+                                }
+                                result = find(ov);
+                            }
+                            // problem, we cannot find object variable!
+                            info("step 2 : not found using binary constraints!");
+                            v.findStep++;
+                            //return null;
+                        }
+
+                    }
+                }
+                info("step 2 : not found using binary constraints!");
+                v.findStep++;
+            }
+           default: {
+                // no solution was found!
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Find a value for a variable.
+     * @return UUID
+     */
+    private String findOrCreate(Variable v) {
+        info("finding value for '" + v.getName()+"' ...");
+        // start the finding process at the last known step.
+        switch (v.findStep) {
+            case 0: {
+                info("step 0 : applying characteristics..");
+                // apply characteristic constraints on the current variable to minimize the research domain.
+                applyUnaryDescriptions(v);
                 // go directly to step 1 below
                 v.findStep++;
             }
@@ -227,19 +327,38 @@ public class ResolutionGraph {
                 for (Constraint bc : v.getBinaryConstraints()) {
                     Variable ov = bc.getObjectVariable();
                     if (ov != null) {
-                        String uuid = null;
-                        if (ov.getValue() != null) {
-                            uuid = bc.find(this.agent);
-                            if (uuid != null) {
-                                v.values.push(uuid);
-                                return uuid;
+
+                        if (ov.getValue() == null) {
+                            String result = find(ov);
+                            while (result != null) {
+                                String uuid = bc.find(agent);
+                                if (uuid != null) {
+                                    v.values.push(uuid);
+                                    return uuid;
+                                }
+                                result = find(ov);
                             }
+                            // problem, we cannot find object variable!
+                            info("step 2 : not found using binary constraints!");
+                            v.findStep++;
+                            //return null;
+
+                        } else {
+                            String result = ov.getValue().toString();
+                            while (result != null) {
+                                String uuid = bc.find(agent);
+                                if (uuid != null) {
+                                    v.values.push(uuid);
+                                    return uuid;
+                                }
+                                result = find(ov);
+                            }
+                            // problem, we cannot find object variable!
+                            info("step 2 : not found using binary constraints!");
+                            v.findStep++;
+                            //return null;
                         }
-                        uuid = find(ov);
-                        if (uuid != null) {
-                            v.values.push(uuid);
-                            return uuid;
-                        }
+
                     }
                 }
                 info("step 2 : not found using binary constraints!");
@@ -248,25 +367,73 @@ public class ResolutionGraph {
             case 3: {
                 // create an instance with the given characteristics.
                 info("step 3 : creating new instance..");
-                String uuid = createInstance(v);
-                while (uuid != null) {
-                    v.values.push(uuid);
-                    //v.addAlreadyTestedValue(uuid);
-                    //if (evaluateValue(v) == true) {
+
+                //apply binary constraints
+
+                for (Constraint c : v.getBinaryConstraints()) {
+                    if (c.getObjectVariable() != null && c.getObjectVariable().getValue() != null) {
+                        c.applyDescription(agent);
+                        c.getObjectVariable().removeValue();
+                        String uuid = createInstance(v);
+                        v.values.push(uuid);
                         return uuid;
-                    //} else {
-                        // create another instance, but with different configuration!
-                    //    uuid = createInstance(v);
-                    //}
+                    }
                 }
+
+                String uuid = createInstance(v);
+                v.values.push(uuid);
+                v.findStep++;
                 info("step 3 : creation problem!");
+                return uuid;
+
             }
-           default: {
+            default: {
                 // no solution was found!
                 return null;
             }
         }
     }
+
+    /**
+     * Find a value for a variable.
+     * @return UUID
+     */
+    private String create(Variable v) {
+        info("finding value for '" + v.getName()+"' ...");
+        // start the finding process at the last known step.
+        switch (v.findStep) {
+            case 0: {
+                info("step 0 : applying characteristics..");
+                // apply characteristic constraints on the current variable to minimize the research domain.
+                applyUnaryDescriptions(v);
+                // go directly to step 1 below
+                v.findStep++;
+            }
+            case 1: {
+                // create an instance with the given characteristics.
+                info("step 3 : creating new instance..");
+
+                String uuid = createInstance(v);
+                while (uuid != null) {
+                    v.values.push(uuid);
+                    //v.addAlreadyTestedValue(uuid);
+                    //if (evaluateValue(v) == true) {
+                    v.findStep++;
+                    return uuid;
+                    //} else {
+                    // create another instance, but with different configuration!
+                    //    uuid = createInstance(v);
+                    //}
+                }
+                info("step 3 : creation problem!");
+            }
+            default: {
+                // no solution was found!
+                return null;
+            }
+        }
+    }
+
 
     /**
      * Evaluated the found value uuid against the variable's v constraints.
@@ -275,7 +442,16 @@ public class ResolutionGraph {
      * @return
      */
     private boolean evaluateValue(Variable v) {
+        info("checking object variable: " + v.getName());
+        for (Constraint c : v.getConstraints()) {
+            info("checking constraint: " + c.getName());
 
+            if (c.check(agent) == false)  {
+                info("constraint '"+c.getName()+"' returns FALSE!");
+                return false;
+            }
+            info("constraint '" + c.getName()+"' TRUE");
+        }
         return true;
     }
 
@@ -284,11 +460,19 @@ public class ResolutionGraph {
      * to minimize the search domain space.
      * @param v
      */
-    private void applyCharacteristics(Variable v) {
-        System.out.println("/////////////////////// applyCharacteristics: " + v.getName());
+    private void applyUnaryDescriptions(Variable v) {
+        System.out.println("/////////////////////// applyUnaryDescriptions: " + v.getName());
         for (Constraint c : v.getUnaryConstraints()) {
             System.out.println("/////////////////////// unary constraint: " + c.getName());
-            c.applyCharacteristic(this.agent);
+            c.applyDescription(this.agent);
+        }
+    }
+
+    private void applyBinaryDescriptions(Variable v) {
+        System.out.println("/////////////////////// apply Binary Descriptions: " + v.getName());
+        for (Constraint c : v.getBinaryConstraints()) {
+            System.out.println("/////////////////////// binary constraint: " + c.getName());
+            c.applyDescription(this.agent);
         }
     }
 
@@ -324,11 +508,17 @@ public class ResolutionGraph {
         }
         return null;
     }
-
+     /*
     private String findUsingConstraints(Variable v) {
         for (Constraint bc : v.getBinaryConstraints()) {
             Variable ov = bc.getObjectVariable();
             if (ov != null) {
+                if (ov.getValue() == null) {
+                    String result = find(ov);
+                    if (result != null) {
+
+                    }
+                }
                 if (ov.getValue() != null) {
 
                 }
@@ -342,10 +532,13 @@ public class ResolutionGraph {
             }
         }
         return null;
-    }
+    } */
 
     private String createInstance(Variable v) {
         if (v != null) {
+
+            // apply binary constraints
+
             Properties props = new Properties();
             for (Property p : v.getProperties()) {
                 props.put(p.getName(), p.getValue());
@@ -356,6 +549,24 @@ public class ResolutionGraph {
                     if (me != null) {
                         if (!v.values.contains(me.getUUID())) {
                             //agent.getRuntimeModel().add(me);
+                            for (Reference r : v.getReferences()) {
+                                if (me.getReference(r.getName()) == null) {
+                                    Reference tmp = me.addReference(r.getName(), r.isOnlyOne());
+                                    if (tmp != null) {
+                                        for (String re : r.getReferencedElements()) {
+                                            tmp.addReferencedElement(re);
+                                        }
+                                    }
+                                } else {
+                                    Reference tmp = me.getReference(r.getName());
+                                    if (tmp != null) {
+                                        for (String re : r.getReferencedElements()) {
+                                            tmp.addReferencedElement(re);
+                                        }
+                                    }
+                                }
+                            }
+
                             return me.getUUID();
                         }
                     }
@@ -452,9 +663,18 @@ public class ResolutionGraph {
             objvar = new Variable(this.agent, obj.getNamespace(), obj.getName());
         } else {
             // Unary
-            objvar = new Variable(this.agent, objective.getObject().toString());
+            objvar = new Variable(this.agent, objective.getObject());
         }
         Constraint c = new Constraint(var, objective.getNamespace(), objective.getName(), objvar, true);
+        if (objective.getResolutionStrategy() != null) {
+            if (objective.getResolutionStrategy().equalsIgnoreCase("f")) {
+                c.setResolutionStrategy(Constraint.FIND);
+            } else if (objective.getResolutionStrategy().equalsIgnoreCase("fc")) {
+                c.setResolutionStrategy(Constraint.FIND_OR_CREATE);
+            } else if (objective.getResolutionStrategy().equalsIgnoreCase("c")) {
+                c.setResolutionStrategy(Constraint.CREATE);
+            }
+        }
         return c;
     }
 
@@ -484,7 +704,7 @@ public class ResolutionGraph {
     private void printconstraint(Constraint c, String indation) {
         if (c != null) {
             if (c.isUnaryConstraint()) {
-                System.out.println(indation + "---" + c.getName() + "---> (" + c.getObjectVariable().getValue().toString() + ")");
+                System.out.println(indation + "---" + c.getName() + "---> (" + c.getObjectVariable().getValue() + ")");
             } else {
                 System.out.println(indation + "---" + c.getName() + "---> " + c.getObjectVariable().getName());
                 for (Constraint cc : c.getObjectVariable().getConstraints()) {

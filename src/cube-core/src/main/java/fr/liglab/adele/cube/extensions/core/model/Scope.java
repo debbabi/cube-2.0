@@ -52,6 +52,15 @@ public class Scope extends AbstractManagedElement {
         super(agent, properties);
     }
 
+    @Override
+    public Reference addReference(String name, boolean onlyOne) throws InvalidNameException {
+        Reference r = super.addReference(name, onlyOne);
+        if (r != null) {
+            // initialize
+        }
+        return r;
+    }
+
     /**
      * Set Scope identifier.
      * Can not be changed from outside of this class

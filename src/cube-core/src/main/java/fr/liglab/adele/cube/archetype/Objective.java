@@ -31,6 +31,8 @@ public class Objective {
     private String name;
     private String description;
 
+    private String resolution;
+
     int priority = DEFAULT_PRIORITY;
 
     private Goal goal;
@@ -38,22 +40,23 @@ public class Objective {
     private Element subject;
     private Object object;
 
-    public Objective(Goal goal, String namespace, String name, Element subject, Object object, int priority, String description) {
+    public Objective(Goal goal, String namespace, String name, Element subject, Object object, String resolution, int priority, String description) {
         this.goal = goal;
         this.namespace = namespace;
         this.name = name;
         this.subject = subject;
+        this.resolution = resolution;
         this.object = object;
         this.priority = priority;
         if (description != null) this.description = description; else this.description = "";
     }
 
-    public Objective(Goal goal, String namespace, String name, Element subject, Object object, int priority) {
-        this(goal, namespace, name, subject, object, priority, "");
+    public Objective(Goal goal, String namespace, String name, Element subject, Object object, String resolution, int priority) {
+        this(goal, namespace, name, subject, object, resolution, priority, "");
     }
 
-    public Objective(Goal goal, String namespace, String name, Element subject, Object object) {
-        this(goal, namespace, name, subject, object, -1, "");
+    public Objective(Goal goal, String namespace, String name, Element subject, Object object, String resolution) {
+        this(goal, namespace, name, subject, object, resolution, -1, "");
     }
 
     public String getNamespace() {
@@ -78,6 +81,14 @@ public class Objective {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getResolutionStrategy() {
+        return resolution;
+    }
+
+    public void setResolution(String resolution) {
+        this.resolution = resolution;
     }
 
     public int getPriority() {

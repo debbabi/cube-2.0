@@ -54,25 +54,47 @@ public class Reference implements Serializable {
         return referencedElements;
     }
 
+    public boolean isOnlyOne() {
+        return onlyOne;
+    }
+
     public void setReferencedElements(List<String> referencedElements) {
         this.referencedElements = referencedElements;
     }
 
     /**
      * Add Referenced Element
-     * @param elementURI
-     * @return FALSE if 'elementURI' is null or the element already referenced; TRUE if added properly.
+     * @param elementUUID
+     * @return FALSE if 'elementUUID' is null or the element already referenced; TRUE if added properly.
      */
-    public boolean addReferencedElement(String elementURI) {
-        if (elementURI == null || elementURI.length() == 0) {
+    public boolean addReferencedElement(String elementUUID) {
+        if (elementUUID == null || elementUUID.length() == 0) {
             return false;
         }
-        if (this.referencedElements.contains(elementURI)) {
+        if (this.referencedElements.contains(elementUUID)) {
             return false;
         }
         if (this.onlyOne == true) {
             this.referencedElements.clear();
         }
-        return this.referencedElements.add(elementURI);
+        return this.referencedElements.add(elementUUID);
     }
+
+    public boolean removeReferencedElement(String elementUUID) {
+        if (elementUUID == null || elementUUID.length() == 0) {
+            return false;
+        }
+        if (!this.referencedElements.contains(elementUUID)) {
+            return false;
+        }
+        return this.referencedElements.remove(elementUUID);
+    }
+
+    public boolean hasReferencedElement(String elementUUID) {
+        if (elementUUID != null) {
+            return (referencedElements.contains(elementUUID));
+        }
+        return false;
+    }
+
 }

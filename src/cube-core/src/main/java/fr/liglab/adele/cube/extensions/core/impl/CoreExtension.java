@@ -25,6 +25,7 @@ import fr.liglab.adele.cube.cmf.ManagedElement;
 import fr.liglab.adele.cube.cmf.PropertyExistException;
 import fr.liglab.adele.cube.extensions.AbstractExtension;
 import fr.liglab.adele.cube.extensions.ExtensionFactory;
+import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
 import fr.liglab.adele.cube.extensions.core.constraints.*;
 import fr.liglab.adele.cube.extensions.core.model.Component;
 import fr.liglab.adele.cube.extensions.core.model.Master;
@@ -45,15 +46,22 @@ public class CoreExtension extends AbstractExtension {
         super(agent, bundle, properties);
     }
 
-
     public void run() {
         //System.out.println("---------------- Core Extension -----------------");
         Object master = getProperties().get("master");
         if (master != null) {
             if (master.toString().equalsIgnoreCase("true")) {
-                Master m = new Master(getCubeAgent());
-                m.setMasterURI(getCubeAgent().getUri());
-                getCubeAgent().getRuntimeModel().add(m);
+                try {
+                    ManagedElement me = getCubeAgent().newManagedElement(CoreExtensionFactory.NAMESPACE, Master.NAME, null);
+                    if (me != null) {
+                        // m.setMasterURI(getCubeAgent().getUri());
+                        getCubeAgent().getRuntimeModel().add(me);
+                    }
+                } catch (InvalidNameException e) {
+                    e.printStackTrace();
+                } catch (PropertyExistException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -120,27 +128,38 @@ public class CoreExtension extends AbstractExtension {
             if (name.equalsIgnoreCase("connected")) {
                 return Connected.instance();
             }
-            if (name.equalsIgnoreCase("controlledby")) {
+            if (name.equalsIgnoreCase("controlledBy")) {
                 return ControlledBy.instance();
             }
-            if (name.equalsIgnoreCase("hasscopeid")) {
+            if (name.equalsIgnoreCase("hasScopeId")) {
                 return HasScopeId.instance();
             }
-            if (name.equalsIgnoreCase("hasnodetype")) {
+            if (name.equalsIgnoreCase("hasNodeType")) {
                 return HasNodeType.instance();
             }
-            if (name.equalsIgnoreCase("hascomponenttype")) {
+            if (name.equalsIgnoreCase("hasComponentType")) {
                 return HasComponentType.instance();
             }
-            if (name.equalsIgnoreCase("incube")) {
-                return InCube.instance();
+            if (name.equalsIgnoreCase("inAgent")) {
+                return InAgent.instance();
             }
             if (name.equalsIgnoreCase("inScope")) {
                 return InScope.instance();
             }
-            if (name.equalsIgnoreCase("onnode")) {
+            if (name.equalsIgnoreCase("onNode")) {
                 return OnNode.instance();
             }
+            if (name.equalsIgnoreCase("hasAtMaxInputComponents")) {
+                return HasAtMaxInputComponents.instance();
+            }
+            if (name.equalsIgnoreCase("hasProperty")) {
+                return HasProperty.instance();
+            }
+            if (name.equalsIgnoreCase("controlledBy")) {
+                return ControlledBy.instance();
+            }
+
+
         }
         return null;
     }

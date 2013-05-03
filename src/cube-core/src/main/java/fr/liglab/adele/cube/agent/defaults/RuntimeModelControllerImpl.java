@@ -22,6 +22,7 @@ import fr.liglab.adele.cube.agent.CubeAgent;
 import fr.liglab.adele.cube.agent.RuntimeModelController;
 import fr.liglab.adele.cube.cmf.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -63,6 +64,23 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
         return element.getUUID();
     }
 
+    public String getAgentOfElement(String managed_element_uuid) {
+        ManagedElement me1 = getLocalElement(managed_element_uuid);
+        if (me1 != null) {
+            return me1.getCubeAgent();
+        }
+        return null;
+    }
+
+    public boolean setAgentOfElement(String managed_element_uuid, String agentUri) {
+        ManagedElement me1 = getLocalElement(managed_element_uuid);
+        if (me1 != null) {
+            ((AbstractManagedElement)me1).setCubeAgent(agentUri);
+            return true;
+        }
+        return false;
+    }
+
     public List<Property> getProperties(String managed_element_uuid) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -84,17 +102,52 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
     }
 
     public List<String> getReferencedElements(String managed_element_uuid, String reference_name) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        System.out.println("CONTROLLER: get referenced elements for: " + managed_element_uuid + " >" + reference_name);
+        List<String> result = new ArrayList<String>();
+        ManagedElement me1 = getLocalElement(managed_element_uuid);
+        if (me1 != null) {
+            System.out.println("CONTROLLER: element>\n" + me1.getTextualDescription());
+            Reference r = me1.getReference(reference_name);
+            if (r != null) {
+                return r.getReferencedElements();
+            } else {
+                System.out.println("CONTROLLER: no reference with name: " + reference_name);
+            }
+        } else {
+            System.out.println("CONTROLLER: no element with uuid: " + managed_element_uuid);
+        }
+        return result;
     }
 
-    public boolean addReference(String managed_element_uuid, String reference_name, String referenced_element_uri) throws InvalidNameException {
-        System.out.println("["+managed_element_uuid+"]---->["+referenced_element_uri+"]");
+    public boolean addReference(String managed_element_uuid, String reference_name, String referenced_element_uuid) throws InvalidNameException {
         ManagedElement me1 = getLocalElement(managed_element_uuid);
         if (me1 != null) {
             Reference r = me1.addReference(reference_name, false);
             if (r != null) {
-                r.addReferencedElement(referenced_element_uri);
+                r.addReferencedElement(referenced_element_uuid);
                 return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean removeReference(String managed_element_uuid, String reference_name, String referenced_element_uuid) {
+        ManagedElement me1 = getLocalElement(managed_element_uuid);
+        if (me1 != null) {
+            Reference r = me1.getReference(reference_name);
+            if (r != null) {
+                return r.removeReferencedElement(referenced_element_uuid);
+            }
+        }
+        return false;
+    }
+
+    public boolean hasReferencedElements(String managed_element_uuid, String reference_name, String referenced_element_uuri) {
+        ManagedElement me1 = getLocalElement(managed_element_uuid);
+        if (me1 != null) {
+            Reference r = me1.getReference(reference_name);
+            if (r != null) {
+                return r.hasReferencedElement(referenced_element_uuri);
             }
         }
         return false;
@@ -111,6 +164,9 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                 }
             }
         }
+        System.out.println("[WARNING] RM.Constroller has not find the element " + managed_element_uuid);
         return null;
     }
+
+
 }

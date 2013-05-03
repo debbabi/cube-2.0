@@ -41,7 +41,8 @@ public interface ConstraintResolver {
      * @param objectVariable
      * @return TRUE if applied
      */
-    boolean applyCharacteristic(CubeAgent agent, Variable subjectVariable, Variable objectVariable);
+    boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable);
+
 
     /**
      * Apply the objective constraint.
@@ -51,7 +52,7 @@ public interface ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    boolean applyObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable);
+    boolean performObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable);
 
     /**
      * Cancel the applied objective constraint.

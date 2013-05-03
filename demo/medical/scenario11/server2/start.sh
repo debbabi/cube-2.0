@@ -31,31 +31,9 @@ fi
 
 # copying needed bundles
 cp ../../../../bin/cube-core-2.0.jar bundle
-cp ../../../../bin/cube-console-2.0.jar bundle
-cp ../../../../bin/cube-osgi-extension-2.0.jar bundle
-#cp ../../../../bin/web-console-branding-2.0.jar bundle
-#cp ../../../../bin/web-console-2.0.jar bundle
+cp ../../../../bin/console-extension-2.0.jar bundle
+cp ../../../../bin/osgi-extension-2.0.jar bundle
 # cp ../../../../bin/cube-internal-monitoring-extension-2.0.jar bundle
-
-
-
-
-cp ../../../../lib/org.apache.felix.httplite.complete-0.1.4.jar bundle
-cp ../../../../lib/pax-web-jetty-bundle-0.7.0.jar bundle
-
-cp ../../../../lib/commons-io-2.4.jar bundle
-cp ../../../../lib/commons-fileupload-1.3.jar bundle
-cp ../../../../lib/json-20090211_1.jar bundle
-
-#cp ../../../../lib/org.apache.felix.httplite.core-0.1.4.jar bundle
-cp ../../../../lib/org.apache.felix.http.api-2.2.0.jar bundle
-#cp ../../../../lib/org.apache.felix.http.base-2.2.0.jar bundle
-#cp ../../../../lib/org.apache.felix.webconsole-2.0.2.jar bundle
-cp ../../../../lib/org.apache.felix.webconsole-4.0.0.jar bundle
-
-cp ../../../../lib/slf4j-log4j12-1.6.4.jar bundle
-
-cp ../../../../lib/org.apache.felix.ipojo.webconsole-1.6.0.jar bundle
 
 cp ../../../../lib/org.apache.felix.bundlerepository-1.6.2.jar bundle
 cp ../../../../lib/org.apache.felix.fileinstall-3.2.0.jar bundle

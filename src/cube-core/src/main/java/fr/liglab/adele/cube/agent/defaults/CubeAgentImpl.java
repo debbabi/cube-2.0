@@ -144,6 +144,7 @@ public class CubeAgentImpl implements CubeAgent {
         // Runtime Model
         this.runtimeModel = new RuntimeModelImpl(this);
 
+        // Runtime Model Controller
         this.rmController = new RuntimeModelControllerImpl(this);
 
         // Life Controller

@@ -111,13 +111,15 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
                 }
             }
             //
-            String uuid =v.getValue();
-            ManagedElement me = agent.getRuntimeModelController().getLocalElement(uuid);
-            if (me != null) {
-                if (me.getState() == ManagedElement.UNCHECKED) {
-                    ((AbstractManagedElement)me).validate();
-                } else if (me.getState() == ManagedElement.UNMANAGED) {
-                    agent.getRuntimeModel().add(me);
+            Object uuid =v.getValue();
+            if (uuid != null) {
+                ManagedElement me = agent.getRuntimeModelController().getLocalElement(uuid.toString());
+                if (me != null) {
+                    if (me.getState() == ManagedElement.UNCHECKED) {
+                        ((AbstractManagedElement)me).validate();
+                    } else if (me.getState() == ManagedElement.UNMANAGED) {
+                        agent.getRuntimeModel().add(me);
+                    }
                 }
             }
         }

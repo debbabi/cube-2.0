@@ -7,10 +7,9 @@
     <archetypeUrl value="file:../scenario1.arch"/>
 
 	<extensions>
-		<extension id="fr.liglab.adele.cube.core">
-			<property name="master" value="true"/>
-		</extension>
-		<extension id="fr.liglab.adele.cube.osgi"/>
+		<extension id="fr.liglab.adele.cube.core"/>
+		<extension id="fr.liglab.adele.cube.osgi"/>	
+		<extension id="fr.liglab.adele.cube.console"/>
 	</extensions>
   </agent>
 </cube>

@@ -39,6 +39,10 @@ import fr.liglab.adele.cube.extensions.Extension;
  */
 public class Constraint {
 
+    public final static int FIND = 0;
+    public final static int FIND_OR_CREATE = 1;
+    public final static int CREATE = 2;
+
     /**
      * Constraint Type.
      */
@@ -50,6 +54,7 @@ public class Constraint {
 
     private boolean objectiveConstraint = false;
 
+    private int resolutionStrategy = FIND;
 
     public Constraint(Variable subjectVar, String namespace, String name, Variable objectVar) {
         this(subjectVar, namespace, name, objectVar, false);
@@ -82,6 +87,14 @@ public class Constraint {
         return this.objectVariable != null && !this.objectVariable.isPrimitive();
     }
 
+    public int getResolutionStrategy() {
+        return resolutionStrategy;
+    }
+
+    public void setResolutionStrategy(int resolutionStrategy) {
+        this.resolutionStrategy = resolutionStrategy;
+    }
+
     public String getNamespace() {
         return namespace;
     }
@@ -99,7 +112,7 @@ public class Constraint {
      * Call the real constraint identified by namespace:name.
      */
     public void init(CubeAgent agent) {
-        if (objectVariable.isPrimitive() == false) {
+        //if (objectVariable.isPrimitive() == false) {
             Extension e = this.subjectVariable.getAgent().getExtension(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
@@ -107,7 +120,7 @@ public class Constraint {
                     cr.init(agent, subjectVariable, objectVariable);
                 }
             }
-        }
+        //}
     }
 
     /**
@@ -116,25 +129,32 @@ public class Constraint {
      * @return
      */
     public boolean check(CubeAgent agent) {
-        if (subjectVariable.values.size() > 0 && objectVariable.values.size() > 0) {
+        init(agent);
+        //if (subjectVariable.hasValue() && objectVariable.hasValue()) {
             Extension e = this.subjectVariable.getAgent().getExtension(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
                     return cr.check(agent, subjectVariable, objectVariable);
+                } else {
+                    System.out.println("[WARNING] the resolver constraint '"+name+"' was not found!");
                 }
+            } else {
+                System.out.println("[WARNING] the extension '"+namespace+"' was not found!");
             }
-        }
+        /*} else {
+            System.out.println("[WARNING] cannot check constraint with null values!");
+        } */
         return false;
     }
 
-    public void applyCharacteristic(CubeAgent agent) {
+    public void applyDescription(CubeAgent agent) {
         if (objectVariable.hasValue()) {
             Extension e = this.subjectVariable.getAgent().getExtension(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
-                    cr.applyCharacteristic(agent, subjectVariable, objectVariable);
+                    cr.applyDescription(agent, subjectVariable, objectVariable);
                 }
             }
         }
@@ -143,19 +163,21 @@ public class Constraint {
     /**
      * If subject or object are remote instances?
      */
-    public void applyObjective(CubeAgent agent) {
+    public void performObjective(CubeAgent agent) {
+        System.out.println(".............................apply objective:"+getName()+"...........................");
         if (subjectVariable.hasValue() && objectVariable.hasValue()) {
             Extension e = this.subjectVariable.getAgent().getExtension(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
-                    cr.applyObjective(agent, subjectVariable, objectVariable);
+                    cr.performObjective(agent, subjectVariable, objectVariable);
                 }
             }
         }
     }
 
     public void cancelObjective(CubeAgent agent) {
+        System.out.println(".............................cancel objective:"+getName()+"...........................");
         if (subjectVariable.values.size() > 0 && objectVariable.values.size() > 0) {
             Extension e = this.subjectVariable.getAgent().getExtension(namespace);
             if (e != null) {

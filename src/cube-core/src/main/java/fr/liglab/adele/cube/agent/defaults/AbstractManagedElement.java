@@ -107,13 +107,14 @@ public abstract class AbstractManagedElement extends Observable implements Manag
     }
 
     public AbstractManagedElement(CubeAgent agent, Properties properties) throws PropertyExistException, InvalidNameException{
-        setCubeAgent(agent.getUri());
         this.uuid = Utils.GenerateUUID();
         if (properties != null) {
             for (Object key : properties.keySet()) {
                 addProperty(key.toString(), properties.get(key).toString());
             }
         }
+        if (this.cubeAgent == null)
+            setCubeAgent(agent.getUri());
     }
 
     int updateState(int newState) {

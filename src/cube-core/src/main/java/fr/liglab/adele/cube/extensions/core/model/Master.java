@@ -38,36 +38,12 @@ public class Master extends AbstractManagedElement {
 
     public static final String NAME = "Master";
 
-    public static final String CORE_MASTER_URI = "core.master.uri";
-    public static final String CORE_MASTER_SCOPE_LEADERS = "core.master.scopeleaders";
-
     public Master(CubeAgent agent) {
         super(agent);
     }
 
     public Master(CubeAgent agent, Properties properties) throws PropertyExistException, InvalidNameException {
         super(agent, properties);
-    }
-
-
-     public void setMasterURI(String master_uri) {
-         try {
-             if (this.getProperty(master_uri) == null) {
-                 this.addProperty(CORE_MASTER_URI, master_uri);
-             } else {
-                this.updateProperty(CORE_MASTER_URI, master_uri);
-             }
-         } catch (PropertyNotExistException e) {
-             e.printStackTrace();
-         } catch (InvalidNameException e) {
-             e.printStackTrace();
-         } catch (PropertyExistException e) {
-             e.printStackTrace();
-         }
-     }
-
-    public String getMasterUri() {
-        return this.getProperty(CORE_MASTER_URI);
     }
 
     /**

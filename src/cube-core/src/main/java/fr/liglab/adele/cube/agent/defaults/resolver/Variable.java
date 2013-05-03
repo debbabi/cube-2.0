@@ -47,7 +47,7 @@ public class Variable extends AbstractManagedElement {
 
     List<Constraint> constraints = new ArrayList<Constraint>();
 
-    public Stack<String> values = new Stack<String>();
+    public Stack<Object> values = new Stack<Object>();
 
     /**
      * Primitive.
@@ -55,11 +55,12 @@ public class Variable extends AbstractManagedElement {
      * @param agent
      * @param value
      */
-    public Variable(CubeAgent agent, String value) {
+    public Variable(CubeAgent agent, Object value) {
         super(agent);
         this.primitive = true;
         this.agent = agent;
-        this.values.push(value);
+        if (value != null)
+            this.values.push(value.toString());
     }
 
     public Variable(CubeAgent agent, String namespace, String name) {
@@ -96,21 +97,34 @@ public class Variable extends AbstractManagedElement {
         this.value = value;
     }   */
 
-    public void setValue(String uri) {
-        if (uri != null) {
-            this.values.push(uri);
+    public void setValue(String uuid) {
+        if (uuid != null) {
+            this.values.push(uuid);
         }
     }
 
-    public String getValue() {
+    public Object getValue() {
         if (this.values.size() > 0)
             return this.values.peek();
         else
             return null;
     }
 
+    public boolean hasValue(Object value) {
+        if (value != null) {
+            return this.values.contains(value);
+        }
+        return false;
+    }
+
     public boolean hasValue() {
         return this.values.size() > 0;
+    }
+
+    public Object removeValue() {
+        if (this.values.size() > 0)
+            return this.values.pop();
+        return null;
     }
 
     public String getName() {

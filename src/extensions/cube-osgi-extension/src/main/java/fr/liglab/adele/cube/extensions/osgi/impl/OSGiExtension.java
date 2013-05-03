@@ -25,6 +25,8 @@ import fr.liglab.adele.cube.cmf.ManagedElement;
 import fr.liglab.adele.cube.cmf.PropertyExistException;
 import fr.liglab.adele.cube.extensions.AbstractExtension;
 import fr.liglab.adele.cube.extensions.ExtensionFactory;
+import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
+import fr.liglab.adele.cube.extensions.core.impl.CoreExtension;
 import fr.liglab.adele.cube.extensions.core.model.Node;
 import org.osgi.framework.BundleContext;
 
@@ -50,11 +52,20 @@ public class OSGiExtension extends AbstractExtension {
         String node_type = btx.getProperty(CUBE_NODE_TYPE);
         String node_id = btx.getProperty(CUBE_NODE_ID);
 
-        Node node = new Node(getCubeAgent());
-        node.setNodeId(node_id);
-        node.setNodeType(node_type);
+        Properties properties = new Properties();
+        try {
+            ManagedElement me = getCubeAgent().newManagedElement(CoreExtensionFactory.NAMESPACE, Node.NAME, properties);
+            if (me != null && me instanceof Node) {
+                ((Node)me).setNodeId(node_id);
+                ((Node)me).setNodeType("OSGi");
+                getCubeAgent().getRuntimeModel().add(me);
+            }
+        } catch (InvalidNameException e) {
+            e.printStackTrace();
+        } catch (PropertyExistException e) {
+            e.printStackTrace();
+        }
 
-        getCubeAgent().getRuntimeModel().add(node);
     }
 
     public void stop() {

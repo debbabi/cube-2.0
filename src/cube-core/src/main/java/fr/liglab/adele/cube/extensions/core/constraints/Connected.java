@@ -24,6 +24,7 @@ import fr.liglab.adele.cube.agent.RuntimeModelController;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
 import fr.liglab.adele.cube.cmf.InvalidNameException;
 import fr.liglab.adele.cube.extensions.core.model.Component;
+import fr.liglab.adele.cube.extensions.core.model.Scope;
 
 /**
  * Author: debbabi
@@ -39,12 +40,24 @@ public class Connected implements ConstraintResolver {
     }
 
     public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        System.out.println("** checking connected..");
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        Object instance1_uuid = subjectVariable.getValue();
+        Object instance2_uuid = objectVariable.getValue();
+
+        if (instance1_uuid != null && instance2_uuid != null) {
+            RuntimeModelController rmController = agent.getRuntimeModelController();
+            if (rmController != null) {
+                if (rmController.hasReferencedElements(instance1_uuid.toString(), Component.CORE_COMPONENT_OUTPUTS, instance2_uuid.toString())) {
+                    if (rmController.hasReferencedElements(instance2_uuid.toString(), Component.CORE_COMPONENT_INPUTS, instance1_uuid.toString())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -56,7 +69,7 @@ public class Connected implements ConstraintResolver {
      * @param subjectVariable
      * @param objectVariable
      */
-    public boolean applyCharacteristic(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+    public boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         //To change body of implemented methods use File | Settings | File Templates.
         return false;
     }
@@ -69,20 +82,22 @@ public class Connected implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean applyObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        String instance1_uri = subjectVariable.getValue();
-        String instance2_uri = objectVariable.getValue();
+    public boolean performObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+        Object instance1_uuid = subjectVariable.getValue();
+        Object instance2_uuid = objectVariable.getValue();
 
-        RuntimeModelController rmController = agent.getRuntimeModelController();
-        if (rmController != null) {
-            try {
-            if (rmController.addReference(instance1_uri, Component.CORE_COMPONENT_OUTPUTS, instance2_uri)) {
-                if (rmController.addReference(instance2_uri, Component.CORE_COMPONENT_INPUTS, instance1_uri)) {
-                    return true;
+        if (instance1_uuid != null && instance2_uuid != null) {
+            RuntimeModelController rmController = agent.getRuntimeModelController();
+            if (rmController != null) {
+                try {
+                if (rmController.addReference(instance1_uuid.toString(), Component.CORE_COMPONENT_OUTPUTS, instance2_uuid.toString())) {
+                    if (rmController.addReference(instance2_uuid.toString(), Component.CORE_COMPONENT_INPUTS, instance1_uuid.toString())) {
+                        return true;
+                    }
                 }
-            }
-            } catch (InvalidNameException ex) {
-                ex.printStackTrace();
+                } catch (InvalidNameException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
         return false;
@@ -97,7 +112,20 @@ public class Connected implements ConstraintResolver {
      * @return
      */
     public boolean cancelObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        Object instance1_uuid = subjectVariable.getValue();
+        Object instance2_uuid = objectVariable.getValue();
+
+        if (instance1_uuid != null && instance2_uuid != null) {
+            RuntimeModelController rmController = agent.getRuntimeModelController();
+            if (rmController != null) {
+                if (rmController.removeReference(instance1_uuid.toString(), Component.CORE_COMPONENT_OUTPUTS, instance2_uuid.toString())) {
+                    if (rmController.removeReference(instance2_uuid.toString(), Component.CORE_COMPONENT_INPUTS, instance1_uuid.toString())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**

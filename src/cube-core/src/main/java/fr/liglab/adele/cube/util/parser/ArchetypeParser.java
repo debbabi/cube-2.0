@@ -54,6 +54,7 @@ public class ArchetypeParser {
     public static final String PRIORITY = "priority";
     public static final String SUBJECT = "s";
     public static final String OBJECT = "o";
+    public static final String RESOLUTION = "r";
 
     static BundleContext bundleContext;
     static CubeLogger log = null;
@@ -219,6 +220,7 @@ public class ArchetypeParser {
                                                 if (osubject == null || !osubject.startsWith("@")) throw new ParseException("No subject was specified for the Objective '"+oname+"'!");
                                                 String oobject = xmlobjective.getAttribute(OBJECT);
                                                 if (oobject == null) throw new ParseException("No object was specified for the Objective '"+oname+"'!");
+                                                String resolution = xmlobjective.getAttribute(RESOLUTION);
                                                 String opriority = xmlobjective.getAttribute(PRIORITY);
                                                 int priority = Objective.DEFAULT_PRIORITY;
                                                 if (opriority != null) priority = Integer.valueOf(opriority).intValue();
@@ -231,7 +233,7 @@ public class ArchetypeParser {
                                                 if (oobject.startsWith("@")) {
                                                     object = archtype.getElement(oobject.substring(1));
                                                 }
-                                                o = new Objective(g, onamespace, oname, subject, object, priority, odescription);
+                                                o = new Objective(g, onamespace, oname, subject, object, resolution, priority, odescription);
                                                 g.addObjective(o);
 
                                             }

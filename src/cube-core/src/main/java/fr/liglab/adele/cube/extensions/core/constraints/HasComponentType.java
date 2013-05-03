@@ -40,28 +40,28 @@ public class HasComponentType implements ConstraintResolver {
     }
 
     public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // no initialization for Unary constraints
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        String instance1_uri = subjectVariable.getValue();
-        String type = objectVariable.getValue();
+        Object instance1_uuid = subjectVariable.getValue();
+        Object type = objectVariable.getValue();
 
-        RuntimeModelController rmController = agent.getRuntimeModelController();
-        if (rmController != null) {
+        if (instance1_uuid != null && type != null) {
+            RuntimeModelController rmController = agent.getRuntimeModelController();
+            if (rmController != null) {
 
-            String value = rmController.getPropertyValue(instance1_uri, Component.CORE_COMPONENT_TYPE);
-            if (value != null && value.equalsIgnoreCase(type)) {
-                return true;
+                String value = rmController.getPropertyValue(instance1_uuid.toString(), Component.CORE_COMPONENT_TYPE);
+                if (value != null && value.equalsIgnoreCase(type.toString())) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    public boolean applyCharacteristic(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        System.out.println(".........,::::...//.. applying characteristic: HasComponentType");
+    public boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         if (subjectVariable != null && objectVariable != null && objectVariable.getValue() != null) {
-            System.out.println(".........,::::...//.. ******");
             if (subjectVariable.getProperty(Component.CORE_COMPONENT_TYPE) == null) {
                 try {
                     subjectVariable.addProperty(Component.CORE_COMPONENT_TYPE, objectVariable.getValue().toString());
@@ -71,6 +71,8 @@ public class HasComponentType implements ConstraintResolver {
                 } catch (InvalidNameException e) {
                     e.printStackTrace();
                 }
+            } else {
+                //TODO to be continued...
             }
         }
         return false;
@@ -84,7 +86,7 @@ public class HasComponentType implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean applyObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+    public boolean performObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

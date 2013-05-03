@@ -51,6 +51,7 @@ public class Component extends AbstractManagedElement {
 
     public Component(CubeAgent agent, Properties properties) throws PropertyExistException, InvalidNameException {
         super(agent, properties);
+        //agent.getRuntimeModelController().getLocalElement()
     }
     /**
      * Sets the Component's local identifier.

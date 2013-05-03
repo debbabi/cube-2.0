@@ -20,46 +20,50 @@ package fr.liglab.adele.cube.extensions.core.constraints;
 
 import fr.liglab.adele.cube.agent.ConstraintResolver;
 import fr.liglab.adele.cube.agent.CubeAgent;
+import fr.liglab.adele.cube.agent.RuntimeModelController;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
+import fr.liglab.adele.cube.extensions.core.model.Component;
 
-
+import java.util.List;
 /**
  * Author: debbabi
- * Date: 4/28/13
- * Time: 7:34 PM
+ * Date: 4/29/13
+ * Time: 2:07 AM
  */
-public class InCube implements ConstraintResolver {
+public class HasAtMaxInputComponents implements ConstraintResolver {
 
-    private static ConstraintResolver instance = new InCube();
+    private static ConstraintResolver instance = new HasAtMaxInputComponents();
 
     public static ConstraintResolver instance() {
         return instance;
     }
 
     public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // no initialization for Unary constraints
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        System.out.println("** checking incube..");
-        /*
-        if (subjectVariable != null && subjectVariable.getValue() != null &&
-                objectVariable != null && objectVariable.getValue() != null) {
-            if (subjectVariable.getValue() instanceof ManagedElement) {
-                String agent_uri = ((ManagedElement)subjectVariable.getValue()).getCubeAgent();
-                if (agent_uri != null && agent_uri.equalsIgnoreCase(objectVariable.getValue().toString())) {
-                    return true;
+        Object instance1_uuid = subjectVariable.getValue();
+        Object atMaxInputComponents = objectVariable.getValue();
+
+        if (instance1_uuid != null && atMaxInputComponents != null) {
+            Integer i = Integer.valueOf(atMaxInputComponents.toString());
+            if (i != null) {
+                RuntimeModelController rmController = agent.getRuntimeModelController();
+                if (rmController != null) {
+                    List<String> inputs = rmController.getReferencedElements(instance1_uuid.toString(), Component.CORE_COMPONENT_INPUTS);
+                    if (inputs != null) {
+                        if (inputs.size() <= i.intValue()) {
+                            return true;
+                        }
+                    }
                 }
             }
-        } */
+        }
         return false;
     }
 
-    public boolean applyCharacteristic(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        if (subjectVariable != null && objectVariable != null && objectVariable.getValue() != null) {
-            subjectVariable.setCubeAgent(objectVariable.toString());
-            return true;
-        }
+    public boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;
     }
 
@@ -71,7 +75,7 @@ public class InCube implements ConstraintResolver {
      * @param objectVariable
      * @return
      */
-    public boolean applyObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+    public boolean performObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

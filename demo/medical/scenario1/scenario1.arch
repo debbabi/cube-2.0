@@ -1,49 +1,63 @@
 <cube xmlns:core="fr.liglab.adele.cube.core">
   <archetype id="net.debbabi.cube.medical" 
-			 description="Scenario 1" 
+			 description="Scenario 0" 
 			 version="2.0">
 
 		<elements>
 
-			<core:Master id="master">
-				<core:inCube o="cube://localhost:38001"/>
-			</core:Master>			
+			<core:Component id="a">
+				<core:hasComponentType o="A"/>
+			</core:Component>
+			<core:Component id="b">
+				<core:hasComponentType o="B"/>
+			</core:Component>		
+			<core:Component id="c">
+				<core:hasComponentType o="C"/>
+			</core:Component>		
 
-			<core:Scope id="orange_cluster">
-				<core:hasScopeId o="OrangeCluster"/>
-				<core:controlledBy o="@master"/>
+			<core:Node id="n">
+				<core:hasNodeType o="OSGi"/>
+			</core:Node>
+
+			<core:Scope id="s">
+				<core:hasScopeId o="Medical"/>
+				<core:controlledBy o="@m"/>
 			</core:Scope>
 
-			<core:Node id="aggr_server">
-				<core:hasNodeType o="AggregationServer"/>
+			<core:Scope id="s2">				
+			</core:Scope>
+
+			<core:Master id="m">
+				<core:inAgent o="cube://localhost:38001"/>
+			</core:Master>
+<!--
+			<core:Node id="n1">
+				<core:hasNodeType o="OSGi"/>
+				<core:hasProperty o="kind:aggregation_server"/>
 			</core:Node>
 
-			<core:Node id="med_server">
-				<core:hasNodeType o="MediationServer"/>				
+			<core:Node id="n2">
+				<core:hasNodeType o="OSGi"/>
+				<core:hasProperty o="kind:mediation_server"/>
 			</core:Node>
+-->
 
-			<core:Component id="ws">
-				<core:hasComponentType o="WSAdapter"/>
-				<core:onNode o="@aggr_server"/>
-			</core:Component>
-
-			<core:Component id="disp">
-				<core:hasComponentType o="Dispatcher"/>
-				<core:onNode o="@med_server"/>
-			</core:Component>		
 		</elements>
 
 		<goals>
-
-			<goal id="g1" description="dynamic scopes management">
-				<core:inScope s="@aggr_server" o="@orange_cluster" priority="1"/>
-				<core:inScope s="@med_server" o="@orange_cluster"/>				
+			<goal>
+				<core:onNode s="@a" o="@n" r="f"/>
+				<core:onNode s="@b" o="@n" r="f"/>
+				<core:onNode s="@c" o="@n" r="f"/>
 			</goal>
-
-			<goal description="g2: connecting remote components">
-				<core:connected s="@ws" o="@disp"/>
+			<goal>
+				<core:inScope s="@n" o="@s" r="fc"/>	
+				<core:controlledBy s="@s2" o="@m" r="f"/>			
 			</goal>
-
+			<goal>
+				<core:connected s="@a" o="@b" r="fc"/>
+				<core:connected s="@b" o="@c" r="fc"/>
+			</goal>
 		</goals>
 
   </archetype>
