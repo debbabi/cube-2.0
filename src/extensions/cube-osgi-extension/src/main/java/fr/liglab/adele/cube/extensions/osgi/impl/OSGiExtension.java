@@ -41,6 +41,7 @@ public class OSGiExtension extends AbstractExtension {
 
     private static final String CUBE_NODE_TYPE = "cube.node.type";
     private static final String CUBE_NODE_ID = "cube.node.id";
+    private static int index = 1;
 
     public OSGiExtension(CubeAgent agent, ExtensionFactory bundle, Properties properties) {
         super(agent, bundle, properties);
@@ -52,12 +53,15 @@ public class OSGiExtension extends AbstractExtension {
         String node_type = btx.getProperty(CUBE_NODE_TYPE);
         String node_id = btx.getProperty(CUBE_NODE_ID);
 
+        if (node_type == null) node_type = "OSGi";
+        if (node_id == null) node_id = "OSGi-" + index++;
+
         Properties properties = new Properties();
         try {
             ManagedElement me = getCubeAgent().newManagedElement(CoreExtensionFactory.NAMESPACE, Node.NAME, properties);
             if (me != null && me instanceof Node) {
                 ((Node)me).setNodeId(node_id);
-                ((Node)me).setNodeType("OSGi");
+                ((Node)me).setNodeType(node_type);
                 getCubeAgent().getRuntimeModel().add(me);
             }
         } catch (InvalidNameException e) {

@@ -11,12 +11,23 @@
 			<core:Component id="b">
 				<core:hasComponentType o="B"/>
 			</core:Component>		
-			<core:Component id="c">
-				<core:hasComponentType o="C"/>
-			</core:Component>		
+	
+			<core:Node id="n1">
+				<core:hasNodeType o="AggregationServer"/>
+			</core:Node>
 
-			<core:Node id="n">
-				<core:hasNodeType o="OSGi"/>
+			<core:Node id="n2">
+				<core:hasNodeType o="MediationServer"/>
+			</core:Node>
+
+			<core:Node id="n3">
+				<core:hasNodeType o="AggregationServer"/>
+				<core:inScope o="@s"/>
+			</core:Node>
+
+			<core:Node id="n4">
+				<core:hasNodeType o="MediationServer"/>
+				<core:inScope o="@s"/>
 			</core:Node>
 
 			<core:Scope id="s">
@@ -30,33 +41,23 @@
 			<core:Master id="m">
 				<core:inAgent o="cube://localhost:38001"/>
 			</core:Master>
-<!--
-			<core:Node id="n1">
-				<core:hasNodeType o="OSGi"/>
-				<core:hasProperty o="kind:aggregation_server"/>
-			</core:Node>
-
-			<core:Node id="n2">
-				<core:hasNodeType o="OSGi"/>
-				<core:hasProperty o="kind:mediation_server"/>
-			</core:Node>
--->
 
 		</elements>
 
 		<goals>
 			<goal>
-				<core:onNode s="@a" o="@n" r="f"/>
-				<core:onNode s="@b" o="@n" r="f"/>
-				<core:onNode s="@c" o="@n" r="f"/>
-			</goal>
-			<goal>
-				<core:inScope s="@n" o="@s" r="fc"/>	
+				<core:inScope s="@n1" o="@s" r="fc"/>
+				<core:inScope s="@n2" o="@s" r="fc"/>		
 				<core:controlledBy s="@s2" o="@m" r="f"/>			
 			</goal>
 			<goal>
+				<core:onNode s="@a" o="@n3" r="f"/>
+				<core:onNode s="@b" o="@n4" r="f"/>
+
+			</goal>
+			<goal>
 				<core:connected s="@a" o="@b" r="fc"/>
-				<core:connected s="@b" o="@c" r="fc"/>
+
 			</goal>
 		</goals>
 
