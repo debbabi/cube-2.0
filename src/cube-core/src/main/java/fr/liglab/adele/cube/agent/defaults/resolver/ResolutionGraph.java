@@ -18,15 +18,18 @@
 
 package fr.liglab.adele.cube.agent.defaults.resolver;
 
-import fr.liglab.adele.cube.agent.CubeAgent;
+import fr.liglab.adele.cube.agent.*;
+import fr.liglab.adele.cube.agent.defaults.ResolverImpl;
 import fr.liglab.adele.cube.cmf.*;
 import fr.liglab.adele.cube.archetype.Archetype;
 import fr.liglab.adele.cube.archetype.Characteristic;
 import fr.liglab.adele.cube.archetype.Element;
 import fr.liglab.adele.cube.archetype.Objective;
 
+import java.io.IOException;
 import java.util.Properties;
 import java.util.Stack;
+import java.util.List;
 
 /**
  *
@@ -74,12 +77,13 @@ public class ResolutionGraph {
      */
     private Variable root;
 
-
+    private Resolver resolver;
     private CubeAgent agent;
 
 
-    public ResolutionGraph(CubeAgent agent) {
-        this.agent = agent;
+    public ResolutionGraph(Resolver resolver) {
+        this.resolver = resolver;
+        this.agent = resolver.getCubeAgent();
     }
 
     public void setRoot(Variable var) {
@@ -247,6 +251,7 @@ public class ResolutionGraph {
                         if (ov.getValue() == null) {
                             String result = find(ov);
                             while (result != null) {
+
                                 String uuid = bc.find(agent);
                                 if (uuid != null) {
                                     v.values.push(uuid);
@@ -262,6 +267,7 @@ public class ResolutionGraph {
                         } else {
                             String result = ov.getValue().toString();
                             while (result != null) {
+
                                 String uuid = bc.find(agent);
                                 if (uuid != null) {
                                     v.values.push(uuid);
@@ -476,10 +482,11 @@ public class ResolutionGraph {
         }
     }
 
-    private String findUsingCharacteristics(Variable v) {
+    public String findUsingCharacteristics(Variable v) {
         if (v.getCubeAgent() != null) {
             if (v.getCubeAgent().equalsIgnoreCase(this.agent.getUri())) {
                 // local search
+                // TODO only valid instancs?
                 for (ManagedElement me : this.agent.getRuntimeModel().getManagedElements(ManagedElement.VALID)) {
                     if (v.values.contains(me.getUUID())) {
                         // bypass if already tested!
@@ -501,38 +508,29 @@ public class ResolutionGraph {
                 }
             } else {
                 // TODO: remote
+                System.out.println("\n\n finding characteristics from remote agent! \n\n");
                 String agent = v.getCubeAgent();
-                // communicate...
 
+                CMessage msg = new CMessage();
+                msg.setTo(agent);
+                msg.setObject("resolution");
+                msg.setBody("findUsingCharacteristics");
+                msg.setAttachement(v);
+                try {
+                    CMessage resultmsg = ((ResolverImpl)this.resolver).sendAndWait(msg);
+                    if (resultmsg != null) {
+                        if (resultmsg.getBody() != null) {
+                            this.agent.addExternalElement(resultmsg.getBody().toString(), resultmsg.getFrom());
+                            return resultmsg.getBody().toString();
+                        }
+                    }
+                } catch (TimeOutException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return null;
     }
-     /*
-    private String findUsingConstraints(Variable v) {
-        for (Constraint bc : v.getBinaryConstraints()) {
-            Variable ov = bc.getObjectVariable();
-            if (ov != null) {
-                if (ov.getValue() == null) {
-                    String result = find(ov);
-                    if (result != null) {
-
-                    }
-                }
-                if (ov.getValue() != null) {
-
-                }
-                String uuid = find(ov);
-                while (uuid != null) {
-                    // found, we use it to find our subject variable.
-                    String result = bc.find(this.agent);
-
-                    uuid = find(ov);
-                }
-            }
-        }
-        return null;
-    } */
 
     private String createInstance(Variable v) {
         if (v != null) {
@@ -585,8 +583,6 @@ public class ResolutionGraph {
     private void info(String msg) {
         System.out.println("[RESOLVER] " + msg);
     }
-
-
 
     private boolean evaluateSubject(Variable var, Element e) {
         Stack<Constraint> stack = new Stack<Constraint>();

@@ -24,17 +24,17 @@
 				<core:hasNodeType o="AggregationServer"/>
 				<core:inScope o="@s"/>
 			</core:Node>
-
+			
 			<core:Node id="n4">
 				<core:hasNodeType o="MediationServer"/>
 				<core:inScope o="@s"/>
 			</core:Node>
-
+			
 			<core:Scope id="s">
 				<core:hasScopeId o="Medical"/>
 				<core:controlledBy o="@m"/>
 			</core:Scope>
-
+			
 			<core:Scope id="s2">				
 			</core:Scope>
 

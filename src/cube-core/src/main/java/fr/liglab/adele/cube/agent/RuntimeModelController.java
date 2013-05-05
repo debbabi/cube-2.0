@@ -17,7 +17,7 @@ public interface RuntimeModelController {
 
     public boolean setAgentOfElement(String managed_element_uuid, String agentUri);
 
-    public List<Property> getProperties(String managed_element_uuid);
+   // public List<Property> getProperties(String managed_element_uuid);
 
     public String getPropertyValue(String managed_element_uuid, String name) ;
 
@@ -34,4 +34,8 @@ public interface RuntimeModelController {
     public ManagedElement getLocalElement(String managed_element_uuid);
 
     boolean hasReferencedElements(String managed_element_uuid, String reference_name, String referenced_element_uuri);
+
+    public void receiveMessage(CMessage msg);
+
+    //List<String> getElements(String agentUri, String namespace, String name);
 }

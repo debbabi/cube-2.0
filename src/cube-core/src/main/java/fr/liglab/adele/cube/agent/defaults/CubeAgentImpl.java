@@ -97,6 +97,8 @@ public class CubeAgentImpl implements CubeAgent {
      */
     private String localId = "0";
 
+    private Map<String , String> externalElements = new HashMap<String, String>();
+
     private static int index = 1;
     private Map<String, ManagedElement> unmanagedElements;
 
@@ -137,8 +139,28 @@ public class CubeAgentImpl implements CubeAgent {
 
         // communicator
         this.communicator = cp.getCommunicator(this.config.getCommunicatorName());
+        if (this.communicator != null) {
 
-        // Unmanaged elements
+            try {
+                this.communicator.addMessagesListener(this.getUri(), new MessagesListener() {
+                    public void receiveMessage(CMessage msg) {
+                        if (msg != null) {
+                            if (msg.getObject() != null && msg.getObject().equalsIgnoreCase("resolution")) {
+                                CubeAgentImpl.this.resolver.receiveMessage(msg);
+                            } else if (msg.getObject() != null && msg.getObject().equalsIgnoreCase("runtimemodel")) {
+                                CubeAgentImpl.this.rmController.receiveMessage(msg);
+                            }
+                        }
+                    }
+                });
+
+            } catch (Exception e) {
+                    e.printStackTrace();
+            }
+        }
+
+
+            // Unmanaged elements
         this.unmanagedElements = new HashMap<String, ManagedElement>();
 
         // Runtime Model
@@ -284,6 +306,14 @@ public class CubeAgentImpl implements CubeAgent {
      */
     public RuntimeModelController getRuntimeModelController() {
         return this.rmController;
+    }
+
+    public void addExternalElement(String element_uuid, String agent_uri) {
+        this.externalElements.put(element_uuid, agent_uri);
+    }
+
+    public String getExternalAgentUri(String managed_element_uuid) {
+        return this.externalElements.get(managed_element_uuid);
     }
 
     public void run() {

@@ -22,6 +22,8 @@ import fr.liglab.adele.cube.agent.ConstraintResolver;
 import fr.liglab.adele.cube.agent.CubeAgent;
 import fr.liglab.adele.cube.extensions.Extension;
 
+import java.io.Serializable;
+
 /**
  *
  *
@@ -37,7 +39,7 @@ import fr.liglab.adele.cube.extensions.Extension;
  * Time: 5:37 PM
  *
  */
-public class Constraint {
+public class Constraint implements Serializable {
 
     public final static int FIND = 0;
     public final static int FIND_OR_CREATE = 1;

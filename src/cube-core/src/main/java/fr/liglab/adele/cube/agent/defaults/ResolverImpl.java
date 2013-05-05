@@ -18,14 +18,14 @@
 
 package fr.liglab.adele.cube.agent.defaults;
 
-import fr.liglab.adele.cube.agent.CubeAgent;
-import fr.liglab.adele.cube.agent.Resolver;
-import fr.liglab.adele.cube.agent.RuntimeModelListener;
+import fr.liglab.adele.cube.agent.*;
 import fr.liglab.adele.cube.agent.defaults.resolver.Constraint;
 import fr.liglab.adele.cube.cmf.ManagedElement;
 import fr.liglab.adele.cube.cmf.Notification;
 import fr.liglab.adele.cube.agent.defaults.resolver.ResolutionGraph;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
+
+import java.io.IOException;
 
 /**
  * Author: debbabi
@@ -68,7 +68,7 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
         /*
          * Create a Resolution Graph (Constraints Graph).
          */
-        ResolutionGraph constraintsGraph = new ResolutionGraph(this.agent);
+        ResolutionGraph constraintsGraph = new ResolutionGraph(this);
         /*
          * Set the root variable.
          */
@@ -184,5 +184,109 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
          *      return false;
          */
     }
+
+    public CubeAgent getCubeAgent() {
+        return this.agent;
+    }
+
+    public void receiveMessage(CMessage msg) {
+        if (msg.getCorrelation() == waitingCorrelation) {
+            this.waitingMessage = msg;
+            if (csplock != null) {
+                synchronized (csplock) {
+                    csplock.notify();
+                }
+            }
+            waitingCorrelation = -1;
+        }
+        try {
+            handleMessage(msg);
+        }  catch(Exception ex) {
+            //getCubeAgent().getLogger().error("[AbstractExtension.receiveMessage] " + ex.getMessage());
+        }
+    }
+
+    protected void handleMessage(CMessage msg) throws Exception {
+
+        if (msg != null) {
+            System.out.println("\n\n received message to resolve! \n\n "+msg.toString()+" \n\n");
+            if (msg.getBody() != null && msg.getBody().toString().equalsIgnoreCase("findUsingCharacteristics")) {
+                if (msg.getAttachement() != null && msg.getAttachement() instanceof Variable) {
+                    ResolutionGraph constraintsGraph = new ResolutionGraph(this);
+                    Variable v = (Variable)msg.getAttachement();
+                    String result = constraintsGraph.findUsingCharacteristics(v);
+
+                    CMessage resmsg = new CMessage();
+                    resmsg.setTo(msg.getFrom());
+                    resmsg.setCorrelation(msg.getCorrelation());
+                    resmsg.setObject(msg.getObject());
+                    resmsg.setBody(result);
+                    try {
+                        getCubeAgent().getCommunicator().sendMessage(resmsg);
+                    } catch (CommunicationException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    public void send(CMessage msg) throws Exception {
+        if (msg != null) {
+            msg.setFrom(getCubeAgent().getUri());
+            msg.setReplyTo(getCubeAgent().getUri());
+            /*if (msg.getTo() != null && !msg.getTo().contains("/ext/"))
+                msg.setTo(msg.getTo() + "/ext/" + getExtensionFactory().getExtensionId());*/
+            getCubeAgent().getCommunicator().sendMessage(msg);
+        }
+    }
+
+    public CMessage sendAndWait(CMessage msg) throws TimeOutException {
+        if (msg != null) {
+            msg.setFrom(getCubeAgent().getUri());
+            msg.setReplyTo(getCubeAgent().getUri());
+            /*if (msg.getTo() != null && !msg.getTo().contains("/ext/"))
+                msg.setTo(msg.getTo() + "/ext/" + getExtensionFactory().getExtensionId());*/
+            //String to = msg.getTo();
+            msg.setCorrelation(++correlation);
+            waitingCorrelation = msg.getCorrelation();
+            //System.out.println(msg.toString());
+            try {
+                this.waitingMessage = null;
+
+                this.getCubeAgent().getCommunicator().sendMessage(msg);
+            } catch (Exception e) {
+                //this.getCubeAgent().getLogger().warning("The Extension could not send a message to " + to + "!");
+            }
+            try {
+                long initialTime = System.currentTimeMillis();
+                long currentTime = initialTime;
+                long waitingTime = TIMEOUT;
+                synchronized (csplock) {
+                    while (((currentTime < (initialTime + TIMEOUT)) && waitingTime > 1)
+                            && (this.waitingMessage == null)) {
+                        csplock.wait(waitingTime);
+                        currentTime = System.currentTimeMillis();
+                        waitingTime = waitingTime - (currentTime - initialTime);
+                    }
+                }
+            } catch (InterruptedException e) {
+                //this.getCubeAgent().getLogger().warning("The Extension waits for a response message from " + to + " but no answer! timeout excedded!");
+            }
+            return this.waitingMessage;
+        } else {
+            return null;
+        }
+    }
+
+    private CMessage waitingMessage = null;
+    private long TIMEOUT = 3000;
+    private Object csplock = new Object();
+    private static long correlation = 1;
+    private long waitingCorrelation = -1;
 
 }

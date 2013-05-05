@@ -34,7 +34,7 @@ import java.util.Properties;
  * Date: 4/25/13
  * Time: 5:34 PM
  */
-public abstract class AbstractManagedElement extends Observable implements ManagedElement, Serializable {
+public abstract class AbstractManagedElement extends Observable implements ManagedElement, Cloneable, Serializable {
 
     /**
      * Current state of the Managed Element.

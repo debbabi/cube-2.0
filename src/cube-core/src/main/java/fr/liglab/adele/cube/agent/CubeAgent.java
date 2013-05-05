@@ -97,4 +97,8 @@ public interface CubeAgent {
      * @return
      */
     public RuntimeModelController getRuntimeModelController();
+
+    public void addExternalElement(String element_uuid, String agent_uri);
+
+    public String getExternalAgentUri(String managed_element_uuid);
 }

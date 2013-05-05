@@ -15,6 +15,7 @@
 
 package fr.liglab.adele.cube.agent;
 
+import fr.liglab.adele.cube.agent.defaults.AbstractManagedElement;
 import fr.liglab.adele.cube.cmf.ManagedElement;
 
 import java.io.Serializable;
@@ -74,7 +75,7 @@ public class CMessage implements Cloneable, Serializable {
 	/** The reply to destination's cube identifier. */
 	private String replyTo = null;
 
-    private ManagedElement attachement = null;
+    private AbstractManagedElement attachement = null;
 
 	/**
 	 * Constructs a new <code>Message</code>
@@ -205,7 +206,7 @@ public class CMessage implements Cloneable, Serializable {
 	}
 
     public void setAttachement(ManagedElement managedElement) {
-        this.attachement = managedElement;
+        this.attachement = (AbstractManagedElement)managedElement;
     }
 
     public ManagedElement getAttachement(){

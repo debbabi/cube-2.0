@@ -6,4 +6,6 @@ package fr.liglab.adele.cube.agent;
  * Time: 6:17 PM
  */
 public interface Resolver {
+    public void receiveMessage(CMessage msg);
+    public CubeAgent getCubeAgent();
 }

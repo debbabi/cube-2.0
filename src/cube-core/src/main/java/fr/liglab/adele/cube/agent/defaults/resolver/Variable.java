@@ -41,7 +41,7 @@ public class Variable extends AbstractManagedElement {
 
     boolean primitive = false;
 
-    private CubeAgent agent;
+    private transient CubeAgent agent;
 
     public int findStep = 0;
 
