@@ -15,7 +15,7 @@
 
 package fr.liglab.adele.cube.util.xml;
 
-import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
+import fr.liglab.adele.cube.plugins.core.CorePluginFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -171,7 +171,7 @@ public class XMLParser implements ContentHandler, ErrorHandler {
     public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
         String namespace = namespaceURI;
         if (namespaceURI != null
-                && (namespaceURI.equalsIgnoreCase(CoreExtensionFactory.NAMESPACE))) {
+                && (namespaceURI.equalsIgnoreCase(CorePluginFactory.NAMESPACE))) {
             namespace = null; // Remove the 'org.apache.felix.ipojo' namespace
         }
         //System.out.println("XML.e/// " + namespace + ":" + localName);

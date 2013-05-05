@@ -1,6 +1,6 @@
 package fr.liglab.adele.cube.agent;
 
-import fr.liglab.adele.cube.cmf.*;
+import fr.liglab.adele.cube.metamodel.*;
 
 import java.util.List;
 

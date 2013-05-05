@@ -20,8 +20,11 @@ package fr.liglab.adele.cube.tools.console;
 
 import fr.liglab.adele.cube.CubePlatform;
 import fr.liglab.adele.cube.agent.CubeAgent;
-import fr.liglab.adele.cube.cmf.*;
-import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
+import fr.liglab.adele.cube.metamodel.InvalidNameException;
+import fr.liglab.adele.cube.metamodel.ManagedElement;
+import fr.liglab.adele.cube.metamodel.PropertyExistException;
+import fr.liglab.adele.cube.plugins.Plugin;
+import fr.liglab.adele.cube.plugins.core.CorePluginFactory;
 import fr.liglab.adele.cube.util.parser.ArchetypeParser;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -50,7 +53,7 @@ public class CubeConsole {
     String m_scope;
 
     @ServiceProperty(name = "osgi.command.function", value = "{}")
-    String[] m_function = new String[]{"version", "agents", "arch", "rm" , "newi" /*, "extensions", "extension"*/};
+    String[] m_function = new String[]{"version", "agents", "arch", "rm" , "newi" , "plugins" /*, "extension"*/};
 
 
     @Descriptor("Show Cube Platform Version")
@@ -96,7 +99,7 @@ public class CubeConsole {
         }
     }
 
-    @Descriptor("Shows the internal model at runtime of the given Cube Instance")
+    @Descriptor("Shows the internal model at runtime of the given Cube Agent")
     public void rm(@Descriptor("Agent local id") String aid) {
         if (aid == null) {
             System.out.println("You should provide which Cube Agent you want to see its Runtime Model.\nType 'cube:agents' to see the list of existing Cube Agents in this platform.");
@@ -140,7 +143,7 @@ public class CubeConsole {
             String msg = "--------------------------------------------------------------------------";
 
             if (type != null) {
-                String typens = CoreExtensionFactory.NAMESPACE;
+                String typens = CorePluginFactory.NAMESPACE;
                 String typename = type;
                 if (type.contains(":")) {
                     String[] tmp = type.split(":");
@@ -185,7 +188,7 @@ public class CubeConsole {
             String msg = "--------------------------------------------------------------------------";
 
             if (type != null) {
-                String typens = CoreExtensionFactory.NAMESPACE;
+                String typens = CorePluginFactory.NAMESPACE;
                 String typename = type;
                 if (type.contains(":")) {
                     String[] tmp = type.split(":");
@@ -221,6 +224,29 @@ public class CubeConsole {
                 }
             } else {
                 msg += "\n... error!";
+            }
+
+            msg += "\n--------------------------------------------------------------------------";
+            System.out.println(msg);
+        }
+    }
+
+    @Descriptor("Shows the internal plugins of the given Cube Agent")
+    public void plugins(@Descriptor("Agent local id") String aid) {
+        if (aid == null) {
+            System.out.println("You should provide which Cube Agent you want to see its Runtime Model.\nType 'cube:agents' to see the list of existing Cube Agents in this platform.");
+            return;
+        }
+        CubeAgent agent = cps.getCubeAgentByLocalId(aid);
+        if (agent == null) {
+            System.out.println("Agent '"+aid+"' does not exist! Type 'cube:agents' to see the list of existing Cube Agents in this platform.");
+        } else {
+            String msg = "--------------------------------------------------------------------------";
+
+            for (Plugin p : agent.getPlugins()) {
+                String ns = p.getPluginFactory().getNamespace();
+                String n = p.getPluginFactory().getName();
+                System.out.println(ns + ":" + n);
             }
 
             msg += "\n--------------------------------------------------------------------------";

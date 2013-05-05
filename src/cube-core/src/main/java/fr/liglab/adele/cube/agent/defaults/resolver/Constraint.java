@@ -20,7 +20,7 @@ package fr.liglab.adele.cube.agent.defaults.resolver;
 
 import fr.liglab.adele.cube.agent.ConstraintResolver;
 import fr.liglab.adele.cube.agent.CubeAgent;
-import fr.liglab.adele.cube.extensions.Extension;
+import fr.liglab.adele.cube.plugins.Plugin;
 
 import java.io.Serializable;
 
@@ -115,7 +115,7 @@ public class Constraint implements Serializable {
      */
     public void init(CubeAgent agent) {
         //if (objectVariable.isPrimitive() == false) {
-            Extension e = this.subjectVariable.getAgent().getExtension(namespace);
+            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
@@ -133,7 +133,7 @@ public class Constraint implements Serializable {
     public boolean check(CubeAgent agent) {
         init(agent);
         //if (subjectVariable.hasValue() && objectVariable.hasValue()) {
-            Extension e = this.subjectVariable.getAgent().getExtension(namespace);
+            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
@@ -152,7 +152,7 @@ public class Constraint implements Serializable {
 
     public void applyDescription(CubeAgent agent) {
         if (objectVariable.hasValue()) {
-            Extension e = this.subjectVariable.getAgent().getExtension(namespace);
+            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
@@ -168,7 +168,7 @@ public class Constraint implements Serializable {
     public void performObjective(CubeAgent agent) {
         System.out.println(".............................apply objective:"+getName()+"...........................");
         if (subjectVariable.hasValue() && objectVariable.hasValue()) {
-            Extension e = this.subjectVariable.getAgent().getExtension(namespace);
+            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
@@ -181,7 +181,7 @@ public class Constraint implements Serializable {
     public void cancelObjective(CubeAgent agent) {
         System.out.println(".............................cancel objective:"+getName()+"...........................");
         if (subjectVariable.values.size() > 0 && objectVariable.values.size() > 0) {
-            Extension e = this.subjectVariable.getAgent().getExtension(namespace);
+            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
@@ -196,7 +196,7 @@ public class Constraint implements Serializable {
      */
     public String find(CubeAgent agent) {
         if (subjectVariable.values.size() > 0 && objectVariable.values.size() > 0) {
-            Extension e = this.subjectVariable.getAgent().getExtension(namespace);
+            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {

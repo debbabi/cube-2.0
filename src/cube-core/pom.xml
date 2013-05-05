@@ -81,28 +81,32 @@
                             fr.liglab.adele.cube,
 
                             fr.liglab.adele.cube.agent,
-                            fr.liglab.adele.cube.cmf,
-                            fr.liglab.adele.cube.agent.defaults,
+                            fr.liglab.adele.cube.metamodel,
+                            fr.liglab.adele.cube.archetype,
 
                             fr.liglab.adele.cube.platform,
-                            fr.liglab.adele.cube.extensions,
-                            fr.liglab.adele.cube.extensions.core,
-                            fr.liglab.adele.cube.extensions.core.model,
-                            fr.liglab.adele.cube.extensions.core.constraints,
+                            fr.liglab.adele.cube.plugins,
+                            fr.liglab.adele.cube.plugins.core,
+                            fr.liglab.adele.cube.plugins.core.model,
+                            fr.liglab.adele.cube.plugins.core.constraints,
 
-                            fr.liglab.adele.cube.archetype,
+
 
                             fr.liglab.adele.cube.util,
                             fr.liglab.adele.cube.util.xml,
-                            fr.liglab.adele.cube.util.parser,
-                            fr.liglab.adele.cube.util.deploy
+                            fr.liglab.adele.cube.util.parser
 
                         </Export-Package>
 						<Private-Package>
-                            fr.liglab.adele.cube.platform.impl,
-                            fr.liglab.adele.cube.extensions.core.impl,
+
+                            fr.liglab.adele.cube.platform,
+                            fr.liglab.adele.cube.agent.defaults,
                             fr.liglab.adele.cube.agent.defaults.communicator,
-                            fr.liglab.adele.cube.agent.defaults.resolver
+                            fr.liglab.adele.cube.agent.defaults.resolver,
+
+                            fr.liglab.adele.cube.plugins.core.impl,
+
+                            fr.liglab.adele.cube.util.deploy
 
                         </Private-Package>
 						<Include-Resource>

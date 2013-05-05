@@ -22,11 +22,11 @@ import fr.liglab.adele.cube.agent.*;
 import fr.liglab.adele.cube.CubePlatform;
 import fr.liglab.adele.cube.archetype.Archetype;
 import fr.liglab.adele.cube.archetype.ArchetypeException;
-import fr.liglab.adele.cube.cmf.InvalidNameException;
-import fr.liglab.adele.cube.cmf.ManagedElement;
-import fr.liglab.adele.cube.cmf.PropertyExistException;
-import fr.liglab.adele.cube.extensions.Extension;
-import fr.liglab.adele.cube.extensions.ExtensionFactory;
+import fr.liglab.adele.cube.metamodel.InvalidNameException;
+import fr.liglab.adele.cube.metamodel.ManagedElement;
+import fr.liglab.adele.cube.metamodel.PropertyExistException;
+import fr.liglab.adele.cube.plugins.Plugin;
+import fr.liglab.adele.cube.plugins.PluginFactory;
 import fr.liglab.adele.cube.util.parser.ArchetypeParser;
 import fr.liglab.adele.cube.util.parser.ArchtypeParsingException;
 import fr.liglab.adele.cube.util.parser.ParseException;
@@ -66,7 +66,7 @@ public class CubeAgentImpl implements CubeAgent {
     /**
      * Cube Agent Extensions.
      */
-    private List<Extension> extensions;
+    private List<Plugin> plugins;
 
     /**
      * Communicator
@@ -175,19 +175,19 @@ public class CubeAgentImpl implements CubeAgent {
         // resolver
         this.resolver = new ResolverImpl(this);
 
-        // get extensions
-        this.extensions = new ArrayList<Extension>();
-        for (ExtensionConfig ex : this.config.getExtensions()) {
+        // plugins
+        this.plugins = new ArrayList<Plugin>();
+        for (PluginConfig ex : this.config.getPlugins()) {
             String id = ex.getId();
             if (id != null && id.length() > 0) {
-                ExtensionFactory eb = getPlatform().getExtensionBundle(id);
+                PluginFactory eb = getPlatform().getPluginFactory(id);
                 if (eb != null) {
-                    Extension extension = eb.getExtensionInstance(this, ex.getProperties());
-                    if (extension != null) {
-                        extensions.add(extension);
+                    Plugin plugin = eb.getPluginInstance(this, ex.getProperties());
+                    if (plugin != null) {
+                        plugins.add(plugin);
                     }
                 }   else {
-                    System.out.println("[WARNING] the extension '"+id+"' was not found in this OSGi Platform. Check that you have already deployed the adequate bundle!");
+                    System.out.println("[WARNING] the plugin '"+id+"' was not found in this OSGi Platform. Check that you have already deployed the adequate bundle!");
                 }
             }
         }
@@ -225,18 +225,18 @@ public class CubeAgentImpl implements CubeAgent {
         return this.archetype;
     }
 
-    public List<Extension> getExtensions() {
-        return this.extensions;
+    public List<Plugin> getPlugins() {
+        return this.plugins;
     }
 
     /**
-     * Gets the extension having the given id.
+     * Gets the plugin having the given id.
      *
      * @param namespace
      */
-    public Extension getExtension(String namespace) {
-        for (Extension e : getExtensions()) {
-            if (e.getExtensionBundle().getNamespace().equalsIgnoreCase(namespace))
+    public Plugin getPlugin(String namespace) {
+        for (Plugin e : getPlugins()) {
+            if (e.getPluginFactory().getNamespace().equalsIgnoreCase(namespace))
                 return e;
         }
         return null;
@@ -269,7 +269,7 @@ public class CubeAgentImpl implements CubeAgent {
      * @return
      */
     public ManagedElement newManagedElement(String namespace, String name, Properties properties) throws InvalidNameException, PropertyExistException {
-        Extension e = getExtension(namespace);
+        Plugin e = getPlugin(namespace);
         if (e != null) {
             ManagedElement me = e.newManagedElement(name, properties);
             if (me != null) {
@@ -327,14 +327,14 @@ public class CubeAgentImpl implements CubeAgent {
         }
         if (this.lifeController != null)
             this.lifeController.run();
-        for (Extension ex: this.getExtensions()) {
+        for (Plugin ex: this.getPlugins()) {
             ex.run();
         }
     }
 
     public void stop() {
         System.out.println("[INFO] >>>>>>>>> stopping CubeAgent: " + uri.toString());
-        for (Extension ex: this.getExtensions()) {
+        for (Plugin ex: this.getPlugins()) {
             ex.stop();
         }
         if (this.lifeController != null)
@@ -345,7 +345,7 @@ public class CubeAgentImpl implements CubeAgent {
 
     public void destroy() {
         System.out.println("[INFO] >>>>>>>>> destroying CubeAgent: " + uri.toString());
-        for (Extension ex: this.getExtensions()) {
+        for (Plugin ex: this.getPlugins()) {
             ex.destroy();
         }
         if (this.lifeController != null)

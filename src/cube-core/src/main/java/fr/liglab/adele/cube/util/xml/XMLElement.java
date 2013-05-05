@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import fr.liglab.adele.cube.extensions.core.CoreExtensionFactory;
+import fr.liglab.adele.cube.plugins.core.CorePluginFactory;
 
 /**
  * An element represents an XML Element.
@@ -111,7 +111,7 @@ public class XMLElement {
      */
     public String getNameSpace() {
     	if(this.nameSpace == null) {
-    		return CoreExtensionFactory.NAMESPACE;
+    		return CorePluginFactory.NAMESPACE;
     	}
         return nameSpace;
     }

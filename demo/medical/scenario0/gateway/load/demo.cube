@@ -6,9 +6,9 @@
 
     <archetypeUrl value="file:../scenario0.arch"/>
 
-	<extensions>
-		<extension id="fr.liglab.adele.cube.core"/>
-	</extensions>
+	<plugins>
+		<plugin id="fr.liglab.adele.cube.core"/>
+	</plugins>
   </agent>
 </cube>
 

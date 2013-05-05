@@ -2,10 +2,10 @@ package fr.liglab.adele.cube.agent;
 
 import fr.liglab.adele.cube.CubePlatform;
 import fr.liglab.adele.cube.archetype.Archetype;
-import fr.liglab.adele.cube.cmf.InvalidNameException;
-import fr.liglab.adele.cube.cmf.ManagedElement;
-import fr.liglab.adele.cube.cmf.PropertyExistException;
-import fr.liglab.adele.cube.extensions.Extension;
+import fr.liglab.adele.cube.metamodel.InvalidNameException;
+import fr.liglab.adele.cube.metamodel.ManagedElement;
+import fr.liglab.adele.cube.metamodel.PropertyExistException;
+import fr.liglab.adele.cube.plugins.Plugin;
 
 import java.util.List;
 import java.util.Properties;
@@ -51,13 +51,13 @@ public interface CubeAgent {
      * Gets the associated Extensions
      * @return
      */
-    public List<Extension> getExtensions();
+    public List<Plugin> getPlugins();
 
     /**
      * Gets the extension having the given id.
      * @param namespace
      */
-    public Extension getExtension(String namespace);
+    public Plugin getPlugin(String namespace);
 
     /**
      * Gets the Cube Agent's Communicator.

@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import fr.liglab.adele.cube.CubePlatform;
-import fr.liglab.adele.cube.agent.ExtensionConfig;
+import fr.liglab.adele.cube.agent.PluginConfig;
 import org.osgi.framework.BundleContext;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -55,8 +55,8 @@ public class AgentConfigParser {
 	private static final String RESOLVER = "resolver";
 	private static final String COMMUNICATOR = "communicator";
 	private static final String ARCHETYPEURL = "archetypeUrl";
-	private static final String EXTENSIONS = "extensions";
-	private static final String EXTENSION = "extension";
+	private static final String PLUGINS = "plugins";
+	private static final String PLUGIN = "plugin";
     private static final String PROPERTY = "property";
     private static final String NAME = "name";
 	private static final String VALUE = "value";
@@ -171,17 +171,17 @@ public class AgentConfigParser {
 								cac.setPerf(new Boolean(cconfig.getAttribute(VALUE)).booleanValue());
 							} else if (cconfig.getName().equalsIgnoreCase(ARCHETYPEURL)) {
 								cac.setArchetypeUrl(cconfig.getAttribute(VALUE));
-							} else if (cconfig.getName().equalsIgnoreCase(EXTENSIONS)) {
-								XMLElement[] extensions = cconfig.getElements(EXTENSION);
+							} else if (cconfig.getName().equalsIgnoreCase(PLUGINS)) {
+								XMLElement[] extensions = cconfig.getElements(PLUGIN);
 								if (extensions != null && extensions.length>0) {
 									for (int j=0; j<extensions.length; j++) {
 										XMLElement extension = extensions[j];										
-										ExtensionConfig aec = new ExtensionConfig();
+										PluginConfig aec = new PluginConfig();
 
 										if (extension.getAttribute(ID) != null) {
 											aec.setId(extension.getAttribute(ID));
 										} else {
-											throw new ParseException("Extension should have an ID!");
+											throw new ParseException("Plugin should have an ID!");
 										}
                                         /*
 										if (extension.getAttribute(VERSION) != null) {

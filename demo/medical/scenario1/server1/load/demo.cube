@@ -6,12 +6,12 @@
 
     <archetypeUrl value="file:../scenario1.arch"/>
 
-	<extensions>
-		<extension id="fr.liglab.adele.cube.core">
+	<plugins>
+		<plugin id="fr.liglab.adele.cube.core">
 			<property name="master" value="true"/>
-		</extension>
-		<extension id="fr.liglab.adele.cube.osgi"/>
-	</extensions>
+		</plugin>
+		<plugin id="fr.liglab.adele.cube.osgi"/>
+	</plugins>
   </agent>
 </cube>
 

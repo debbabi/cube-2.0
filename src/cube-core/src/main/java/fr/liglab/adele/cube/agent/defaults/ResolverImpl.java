@@ -20,8 +20,8 @@ package fr.liglab.adele.cube.agent.defaults;
 
 import fr.liglab.adele.cube.agent.*;
 import fr.liglab.adele.cube.agent.defaults.resolver.Constraint;
-import fr.liglab.adele.cube.cmf.ManagedElement;
-import fr.liglab.adele.cube.cmf.Notification;
+import fr.liglab.adele.cube.metamodel.ManagedElement;
+import fr.liglab.adele.cube.metamodel.Notification;
 import fr.liglab.adele.cube.agent.defaults.resolver.ResolutionGraph;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
 
@@ -202,7 +202,7 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
         try {
             handleMessage(msg);
         }  catch(Exception ex) {
-            //getCubeAgent().getLogger().error("[AbstractExtension.receiveMessage] " + ex.getMessage());
+            //getCubeAgent().getLogger().error("[AbstractPlugin.receiveMessage] " + ex.getMessage());
         }
     }
 
@@ -260,7 +260,7 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
 
                 this.getCubeAgent().getCommunicator().sendMessage(msg);
             } catch (Exception e) {
-                //this.getCubeAgent().getLogger().warning("The Extension could not send a message to " + to + "!");
+                //this.getCubeAgent().getLogger().warning("The Plugin could not send a message to " + to + "!");
             }
             try {
                 long initialTime = System.currentTimeMillis();
@@ -275,7 +275,7 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
                     }
                 }
             } catch (InterruptedException e) {
-                //this.getCubeAgent().getLogger().warning("The Extension waits for a response message from " + to + " but no answer! timeout excedded!");
+                //this.getCubeAgent().getLogger().warning("The Plugin waits for a response message from " + to + " but no answer! timeout excedded!");
             }
             return this.waitingMessage;
         } else {

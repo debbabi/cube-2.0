@@ -18,7 +18,7 @@
 
 package fr.liglab.adele.cube.agent;
 
-import fr.liglab.adele.cube.cmf.Notification;
+import fr.liglab.adele.cube.metamodel.Notification;
 import fr.liglab.adele.cube.agent.defaults.RuntimeModelImpl;
 
 /**

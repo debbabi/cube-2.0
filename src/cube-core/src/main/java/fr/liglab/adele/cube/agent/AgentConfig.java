@@ -45,7 +45,7 @@ public class AgentConfig {
     private boolean perf = false;
     private boolean persist = false;
 
-    private List<ExtensionConfig> extensions = new ArrayList<ExtensionConfig>();
+    private List<PluginConfig> extensions = new ArrayList<PluginConfig>();
 
     public AgentConfig() {
 
@@ -118,15 +118,15 @@ public class AgentConfig {
         this.archetypeUrl = archetypeUrl;
     }
 
-    public List<ExtensionConfig> getExtensions() {
+    public List<PluginConfig> getPlugins() {
         return extensions;
     }
 
-    public void addExtension(ExtensionConfig aec) {
+    public void addExtension(PluginConfig aec) {
         this.extensions.add(aec);
     }
 
-    public void setExtensions(List<ExtensionConfig> extensions) {
+    public void setExtensions(List<PluginConfig> extensions) {
         this.extensions = extensions;
     }
 

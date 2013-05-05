@@ -19,8 +19,8 @@
 package fr.liglab.adele.cube.agent.defaults;
 
 import fr.liglab.adele.cube.agent.*;
-import fr.liglab.adele.cube.cmf.ManagedElement;
-import fr.liglab.adele.cube.cmf.Notification;
+import fr.liglab.adele.cube.metamodel.ManagedElement;
+import fr.liglab.adele.cube.metamodel.Notification;
 
 import java.util.*;
 

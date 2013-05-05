@@ -20,16 +20,14 @@ package fr.liglab.adele.cube.agent.defaults.resolver;
 
 import fr.liglab.adele.cube.agent.*;
 import fr.liglab.adele.cube.agent.defaults.ResolverImpl;
-import fr.liglab.adele.cube.cmf.*;
+import fr.liglab.adele.cube.metamodel.*;
 import fr.liglab.adele.cube.archetype.Archetype;
 import fr.liglab.adele.cube.archetype.Characteristic;
 import fr.liglab.adele.cube.archetype.Element;
 import fr.liglab.adele.cube.archetype.Objective;
 
-import java.io.IOException;
 import java.util.Properties;
 import java.util.Stack;
-import java.util.List;
 
 /**
  *

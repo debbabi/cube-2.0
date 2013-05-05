@@ -28,7 +28,7 @@
 
 	<modules>
 		<module>cube-core</module>
-		<module>extensions</module>
+		<module>plugins</module>
 		<module>tools</module>
 		<!--module>usecases</module>
 	    <module>doc</module-->
