@@ -99,19 +99,49 @@ public class ResolutionGraph {
     public boolean resolve() {
         //System.out.println("************** resolve ****************");
         if (root != null) {
-            // create the resolution graph from the archetype.
+
+            // createValue the resolution graph from the archetype.
             preProcessing();
             print();
             // For each objective constraint related to the root variable,
-            // we try to resolve the specified constraints.
+            // we try to resolve the specified objective constraints.
             for (Constraint o : root.getObjectiveConstraints()) {
+                info("*** trying to resolve the objective: " + o.getName());
                 if (resolveObjective(o) == false) {
                     // TODO: cancel applied constraints!!!!
+                    info("*** objective '" + o.getName() +"' not resolved!");
                     return false;
                 }
+                info("*** the objective '" + o.getName() +"' is resolved!");
             }
         }
         return true;
+    }
+
+    public String find() {
+        if (root != null) {
+            //System.out.println("*********** findValue ************");
+            //print();
+            //System.out.println("*********************** variable: " +root.getTextualDescription());
+            String tmp = findValue(root);
+            //System.out.println("*********************** value: " +tmp );
+            return tmp;
+        }
+        return null;
+    }
+
+    public String create() {
+        if (root != null) {
+            System.out.println("*********** create ************");
+            print();
+            System.out.println("*********************** variable: " +root.getTextualDescription());
+            String tmp = createUsingCharacteristics(root);
+            if (evaluateValue(root) == true) {
+                System.out.println("*********************** value created: " +tmp );
+                return tmp;
+            }
+        }
+        return null;
     }
 
 
@@ -121,7 +151,7 @@ public class ResolutionGraph {
     private void preProcessing() {
         Archetype archetype = this.agent.getArchetype();
         if (archetype != null) {
-            // find all objectives for this element
+            // findValue all objectives for this element
             for (Objective obj : archetype.getObjectives()) {
                 /*
                  * if the subject of the objective constraint has the same metamodel as the root variable
@@ -157,38 +187,37 @@ public class ResolutionGraph {
     private boolean resolveObjective(Constraint objective) {
         if (objective.isBinaryConstraint()) {
             // resolve and apply binary objective here..
-            // 1. find value for the object variable
-            info("trying to find value for the object variable of the objective constraint '" + objective.getName() + "'");
+            // 1. findValue value for the object variable
 
             String uuid = null;
             if (objective.getResolutionStrategy() == Constraint.FIND) {
-                uuid = find(objective.getObjectVariable());
+                uuid = findValue(objective.getObjectVariable());
             } else if (objective.getResolutionStrategy() == Constraint.FIND_OR_CREATE) {
-                uuid = findOrCreate(objective.getObjectVariable());
+                uuid = findOrCreateValue(objective.getObjectVariable());
             } else if (objective.getResolutionStrategy() == Constraint.CREATE) {
-                uuid = create(objective.getObjectVariable());
+                uuid = createValue(objective.getObjectVariable());
             }
 
             while (uuid != null) {
-                info("find: " + uuid);
+                info("** performing objective '"+objective.getName()+"' between '"+objective.getSubjectVariable().getValue().toString()+"' and '"+uuid+"'...");
                 objective.performObjective(this.agent);
                 if (evaluateValue(objective.getObjectVariable())) {
                     return true;
                 }
                 objective.cancelObjective(this.agent);
 
-                // find new value
+                // findValue new value
                 if (objective.getResolutionStrategy() == Constraint.FIND) {
-                    uuid = find(objective.getObjectVariable());
+                    uuid = findValue(objective.getObjectVariable());
                 } else if (objective.getResolutionStrategy() == Constraint.FIND_OR_CREATE) {
-                    uuid = findOrCreate(objective.getObjectVariable());
+                    uuid = findOrCreateValue(objective.getObjectVariable());
                 } else if (objective.getResolutionStrategy() == Constraint.CREATE) {
-                    uuid = create(objective.getObjectVariable());
+                    uuid = createValue(objective.getObjectVariable());
                 }
             }
 
             /*
-             if no value is find for the object (related) variable, no solution is found.
+             if no value is findValue for the object (related) variable, no solution is found.
              TODO: In the future, we can put it in the unresolved objectives, and try again
              after some moments.
              */
@@ -204,12 +233,195 @@ public class ResolutionGraph {
     }
 
 
+    private String createUsingCharacteristics(Variable v) {
+        if (v != null && v.getCubeAgent() != null) {
+            if (v.getCubeAgent().equalsIgnoreCase(this.agent.getUri())) {
+                // apply binary constraints
+                Properties props = new Properties();
+                for (Property p : v.getProperties()) {
+                    props.put(p.getName(), p.getValue());
+                }
+                try {
+                    ManagedElement me = agent.newManagedElement(v.getNamespace(), v.getName(), props);
+                    //System.out.println(me.getTextualDescription());
+                    if (me != null) {
+                        if (!v.values.contains(me.getUUID())) {
+                            //agent.getRuntimeModel().add(me);
+                            for (Reference r : v.getReferences()) {
+                                if (me.getReference(r.getName()) == null) {
+                                    Reference tmp = me.addReference(r.getName(), r.isOnlyOne());
+                                    if (tmp != null) {
+                                        for (String re : r.getReferencedElements()) {
+                                            tmp.addReferencedElement(re);
+                                        }
+                                    }
+                                } else {
+                                    Reference tmp = me.getReference(r.getName());
+                                    if (tmp != null) {
+                                        for (String re : r.getReferencedElements()) {
+                                            tmp.addReferencedElement(re);
+                                        }
+                                    }
+                                }
+                            }
+                            info("new instance..." + me.getTextualDescription());
+
+                            v.setValue(me.getUUID());
+                            return me.getUUID();
+                        }
+                    }
+
+                } catch (InvalidNameException e) {
+                    e.printStackTrace();
+                    return null;
+                } catch (PropertyExistException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            } else {
+                // createValue remotely
+                info("... remote createValue");
+                String agent = v.getCubeAgent();
+                CMessage msg = new CMessage();
+                msg.setTo(agent);
+                msg.setObject("resolution");
+                msg.setBody("createUsingCharacteristics");
+                msg.setAttachement(v);
+                try {
+                    System.out.println("sending..." + msg.toString());
+                    System.out.println(v.getTextualDescription());
+                    CMessage resultmsg = ((ResolverImpl)this.resolver).sendAndWait(msg);
+                    if (resultmsg != null) {
+                        System.out.println("result..." + resultmsg.toString());
+
+                        if (resultmsg.getBody() != null) {
+                            this.agent.addExternalElement(resultmsg.getBody().toString(), resultmsg.getFrom());
+                            info("createValue instance for variable '"+v.getName()+"' using characteristics ::: created (remote): " + resultmsg.getBody().toString());
+                            v.setValue(resultmsg.getBody().toString());
+                            if (evaluateValue(v)) {
+                                return resultmsg.getBody().toString();
+                            }
+                        }
+                    }
+                } catch (TimeOutException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+    public String findUsingCharacteristics(Variable v) {
+        info("findValue value for '"+v.getName()+"' using characteristics..\n"+v.getTextualDescription());
+        if (v.getCubeAgent() != null) {
+            if (v.getCubeAgent().equalsIgnoreCase(this.agent.getUri())) {
+                info("... local search");
+                // local search
+                // TODO only valid instancs?
+                for (ManagedElement me : this.agent.getRuntimeModel().getManagedElements(v.getNamespace(), v.getName(), ManagedElement.VALID)) {
+                    if (v.values.contains(me.getUUID())) {
+                        // bypass if already tested!
+                        continue;
+                    }
+                    boolean equiv = true;
+                    for (Property p : v.getProperties()) {
+                        String pme = me.getProperty(p.getName());
+                        if (pme != null && pme.equalsIgnoreCase(p.getValue())) {
+                            continue;
+                        } else {
+                            equiv = false;
+                            break;
+                        }
+                    }
+                    if (equiv == true) {
+                        info("findValue value for '"+v.getName()+"' using characteristics ::: found: " + me.getUri());
+                        v.setValue(me.getUUID());
+                        if (evaluateValue(v) == true) {
+                            return me.getUUID();
+                        } else {
+                            info("the value '"+me.getUUID()+"' is not adequate!");
+                        }
+                    }
+                }
+            } else {
+                info("... remote search");
+                String agent = v.getCubeAgent();
+                CMessage msg = new CMessage();
+                msg.setTo(agent);
+                msg.setObject("resolution");
+                msg.setBody("findUsingCharacteristics");
+                msg.setAttachement(v);
+                try {
+                    CMessage resultmsg = ((ResolverImpl)this.resolver).sendAndWait(msg);
+                    if (resultmsg != null) {
+                        if (resultmsg.getBody() != null) {
+                            this.agent.addExternalElement(resultmsg.getBody().toString(), resultmsg.getFrom());
+                            info("findValue value for '"+v.getName()+"' using characteristics ::: found (remote): " + resultmsg.getBody().toString());
+                            v.setValue(resultmsg.getBody().toString());
+                            if (evaluateValue(v) == true) {
+                                return resultmsg.getBody().toString();
+                            }
+                        }
+                    }
+                } catch (TimeOutException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        info("findValue value for '"+v.getName()+"' using characteristics ::: not found!");
+        return null;
+    }
+
+    public String findUsingBinaryConstraints(Variable v) {
+        // findValue from related constraints.
+        //String uuid = findUsingConstraints(v);
+
+        for (Constraint bc : v.getBinaryConstraints()) {
+            Variable ov = bc.getObjectVariable();
+
+            String result = null;
+            if (ov.hasValue() == false) {
+                // object variable has no value!
+                // we try first to findValue a value for it.
+                result = findValue(ov);
+            }
+            else {
+                // object variable has already a value. We try to call again the binary constraint to retrieve other
+                // value for the subject variable.
+                // if no value is returned, we change the object variable.
+                result = ov.getValue().toString();
+            }
+            while (result != null) {
+                info("findValue value for '"+bc.getSubjectVariable().getName()+"' using constraint '"+bc.getName()+"' ...");
+
+                String uuid = bc.find(agent);
+                while (uuid != null) {
+                    v.setValue(uuid);
+                    info("findValue value for '"+bc.getSubjectVariable().getName()+"' using constraint '"+bc.getName()+"' ::: found but not yet checked: " + uuid);
+                    if (evaluateValue(v) == true) {
+                        info("findValue value for '"+bc.getSubjectVariable().getName()+"' using constraint '"+bc.getName()+"' ::: found: " + uuid);
+                        return uuid;
+                    } else {
+                        uuid = bc.find(agent);
+                    }
+                }
+                info("findValue value for '"+bc.getSubjectVariable().getName()+"' using constraint '"+bc.getName()+"' ::: no value!");
+                result = findValue(ov);
+            }
+            // problem, we cannot findValue object variable!
+            //info("step 2 : not found using binary constraints!");
+            //v.findStep++;
+            //return null;
+
+        }
+        return null;
+    }
 
     /**
      * Find a value for a variable.
      * @return UUID
      */
-    private String find(Variable v) {
+    private String findValue(Variable v) {
         info("finding value for '" + v.getName()+"' ...");
         // start the finding process at the last known step.
         switch (v.findStep) {
@@ -221,68 +433,43 @@ public class ResolutionGraph {
                 v.findStep++;
             }
             case 1: {
-                info("step 1 : find using characteristics..");
-                // find using the current configuration.
+                info("step 1 :");
+                // findValue using the current configuration.
                 String uuid = findUsingCharacteristics(v);
-                while (uuid != null) {
-                    v.values.push(uuid);
-                    //v.addAlreadyTestedValue(uuid);
-                    //if (evaluateValue(v)) {
+                if (uuid != null) {
+
+                        //v.setValue(uuid);
+                        //v.addAlreadyTestedValue(uuid);
+                        //if (evaluateValue(v)) {
                         return uuid;
+
                     //} else {
                         // add to already tested values
-                        // find again using the same technique until no value will be returned!
+                        // findValue again using the same technique until no value will be returned!
                     //    uuid = findUsingCharacteristics(v);
                     //}
                 }
-                info("step 1 : not found using characteristics!");
+                //info("step 1 : not found using characteristics!");
+                info("step 2 : value for '"+v.getName()+"' not found using characteristics!");
                 v.findStep++;
             }
             case 2: {
-                // find from related constraints.
-                //String uuid = findUsingConstraints(v);
-                info("step 2 : find using binary constraints..");
-                for (Constraint bc : v.getBinaryConstraints()) {
-                    Variable ov = bc.getObjectVariable();
-                    if (ov != null) {
-
-                        if (ov.getValue() == null) {
-                            String result = find(ov);
-                            while (result != null) {
-
-                                String uuid = bc.find(agent);
-                                if (uuid != null) {
-                                    v.values.push(uuid);
-                                    return uuid;
-                                }
-                                result = find(ov);
-                            }
-                            // problem, we cannot find object variable!
-                            info("step 2 : not found using binary constraints!");
-                            v.findStep++;
-                            //return null;
-
-                        } else {
-                            String result = ov.getValue().toString();
-                            while (result != null) {
-
-                                String uuid = bc.find(agent);
-                                if (uuid != null) {
-                                    v.values.push(uuid);
-                                    return uuid;
-                                }
-                                result = find(ov);
-                            }
-                            // problem, we cannot find object variable!
-                            info("step 2 : not found using binary constraints!");
-                            v.findStep++;
-                            //return null;
-                        }
-
-                    }
+                info("step 2 : findValue value for '"+v.getName()+"' using binary constraints..");
+                String uuid = findUsingBinaryConstraints(v);
+                if (uuid != null) {
+                    //v.values.push(uuid);
+                    //v.addAlreadyTestedValue(uuid);
+                    //if (evaluateValue(v)) {
+                    return uuid;
+                    //} else {
+                    // add to already tested values
+                    // findValue again using the same technique until no value will be returned!
+                    //    uuid = findUsingCharacteristics(v);
+                    //}
                 }
-                info("step 2 : not found using binary constraints!");
+                info("step 2 : value for '"+v.getName()+"' not found using binary constraints!");
                 v.findStep++;
+
             }
            default: {
                 // no solution was found!
@@ -295,7 +482,7 @@ public class ResolutionGraph {
      * Find a value for a variable.
      * @return UUID
      */
-    private String findOrCreate(Variable v) {
+    private String findOrCreateValue(Variable v) {
         info("finding value for '" + v.getName()+"' ...");
         // start the finding process at the last known step.
         switch (v.findStep) {
@@ -307,88 +494,60 @@ public class ResolutionGraph {
                 v.findStep++;
             }
             case 1: {
-                info("step 1 : find using characteristics..");
-                // find using the current configuration.
+                info("step 1 : ");
+                // findValue using the current configuration.
                 String uuid = findUsingCharacteristics(v);
-                while (uuid != null) {
+                if (uuid != null) {
                     v.values.push(uuid);
                     //v.addAlreadyTestedValue(uuid);
-                    if (evaluateValue(v)) {
-                        return uuid;
-                    } else {
-                        // add to already tested values
-                        // find again using the same technique until no value will be returned!
-                        uuid = findUsingCharacteristics(v);
-                    }
+                    return uuid;
+
                 }
-                info("step 1 : not found using characteristics!");
+                //info("step 1 : not found using characteristics!");
                 v.findStep++;
             }
             case 2: {
-                // find from related constraints.
-                //String uuid = findUsingConstraints(v);
-                info("step 2 : find using binary constraints..");
-                for (Constraint bc : v.getBinaryConstraints()) {
-                    Variable ov = bc.getObjectVariable();
-                    if (ov != null) {
-
-                        if (ov.getValue() == null) {
-                            String result = find(ov);
-                            while (result != null) {
-                                String uuid = bc.find(agent);
-                                if (uuid != null) {
-                                    v.values.push(uuid);
-                                    return uuid;
-                                }
-                                result = find(ov);
-                            }
-                            // problem, we cannot find object variable!
-                            info("step 2 : not found using binary constraints!");
-                            v.findStep++;
-                            //return null;
-
-                        } else {
-                            String result = ov.getValue().toString();
-                            while (result != null) {
-                                String uuid = bc.find(agent);
-                                if (uuid != null) {
-                                    v.values.push(uuid);
-                                    return uuid;
-                                }
-                                result = find(ov);
-                            }
-                            // problem, we cannot find object variable!
-                            info("step 2 : not found using binary constraints!");
-                            v.findStep++;
-                            //return null;
-                        }
-
-                    }
+                info("step 2 : findValue value for '"+v.getName()+"' using binary constraints..");
+                String uuid = findUsingBinaryConstraints(v);
+                if (uuid != null) {
+                    v.values.push(uuid);
+                    //v.addAlreadyTestedValue(uuid);
+                    //if (evaluateValue(v)) {
+                    return uuid;
+                    //} else {
+                    // add to already tested values
+                    // findValue again using the same technique until no value will be returned!
+                    //    uuid = findUsingCharacteristics(v);
+                    //}
                 }
-                info("step 2 : not found using binary constraints!");
+                info("step 2 : value for '"+v.getName()+"' not found using binary constraints!");
                 v.findStep++;
             }
             case 3: {
-                // create an instance with the given characteristics.
-                info("step 3 : creating new instance..");
+                // createValue an instance with the given characteristics.
+                info("step 3 : creating new '"+v.getName()+"' instance..");
 
                 //apply binary constraints
 
                 for (Constraint c : v.getBinaryConstraints()) {
-                    if (c.getObjectVariable() != null && c.getObjectVariable().getValue() != null) {
+                    if (c.getObjectVariable() != null && c.getObjectVariable().hasValue()) {
                         c.applyDescription(agent);
                         c.getObjectVariable().removeValue();
-                        String uuid = createInstance(v);
-                        v.values.push(uuid);
-                        return uuid;
+                        String uuid = createUsingCharacteristics(v);
+                        if (uuid != null) {
+                            v.values.push(uuid);
+                            return uuid;
+                        }
                     }
                 }
 
-                String uuid = createInstance(v);
-                v.values.push(uuid);
+                String uuid = createUsingCharacteristics(v);
+                if (uuid != null) {
+                    v.values.push(uuid);
+                    info("step 3 : error while creating an instance for variable '"+v.getName()+"'!");
+                    return uuid;
+                }
                 v.findStep++;
-                info("step 3 : creation problem!");
-                return uuid;
 
             }
             default: {
@@ -399,11 +558,11 @@ public class ResolutionGraph {
     }
 
     /**
-     * Find a value for a variable.
+     * Find a value for a variable by creating it.
      * @return UUID
      */
-    private String create(Variable v) {
-        info("finding value for '" + v.getName()+"' ...");
+    private String createValue(Variable v) {
+        info("creating instance value for '" + v.getName()+"' ...");
         // start the finding process at the last known step.
         switch (v.findStep) {
             case 0: {
@@ -414,10 +573,10 @@ public class ResolutionGraph {
                 v.findStep++;
             }
             case 1: {
-                // create an instance with the given characteristics.
+                // createValue an instance with the given characteristics.
                 info("step 3 : creating new instance..");
 
-                String uuid = createInstance(v);
+                String uuid = createUsingCharacteristics(v);
                 while (uuid != null) {
                     v.values.push(uuid);
                     //v.addAlreadyTestedValue(uuid);
@@ -425,8 +584,8 @@ public class ResolutionGraph {
                     v.findStep++;
                     return uuid;
                     //} else {
-                    // create another instance, but with different configuration!
-                    //    uuid = createInstance(v);
+                    // createValue another instance, but with different configuration!
+                    //    uuid = createUsingCharacteristics(v);
                     //}
                 }
                 info("step 3 : creation problem!");
@@ -465,121 +624,29 @@ public class ResolutionGraph {
      * @param v
      */
     private void applyUnaryDescriptions(Variable v) {
-        System.out.println("/////////////////////// applyUnaryDescriptions: " + v.getName());
+        //System.out.println("/////////////////////// applyUnaryDescriptions: " + v.getName());
         for (Constraint c : v.getUnaryConstraints()) {
-            System.out.println("/////////////////////// unary constraint: " + c.getName());
+            //System.out.println("/////////////////////// unary constraint: " + c.getName());
             c.applyDescription(this.agent);
         }
     }
 
     private void applyBinaryDescriptions(Variable v) {
-        System.out.println("/////////////////////// apply Binary Descriptions: " + v.getName());
+        //System.out.println("/////////////////////// apply Binary Descriptions: " + v.getName());
         for (Constraint c : v.getBinaryConstraints()) {
-            System.out.println("/////////////////////// binary constraint: " + c.getName());
+            //System.out.println("/////////////////////// binary constraint: " + c.getName());
             c.applyDescription(this.agent);
         }
     }
 
-    public String findUsingCharacteristics(Variable v) {
-        if (v.getCubeAgent() != null) {
-            if (v.getCubeAgent().equalsIgnoreCase(this.agent.getUri())) {
-                // local search
-                // TODO only valid instancs?
-                for (ManagedElement me : this.agent.getRuntimeModel().getManagedElements(ManagedElement.VALID)) {
-                    if (v.values.contains(me.getUUID())) {
-                        // bypass if already tested!
-                        continue;
-                    }
-                    boolean equiv = true;
-                    for (Property p : v.getProperties()) {
-                        String pme = me.getProperty(p.getName());
-                        if (pme != null && pme.equalsIgnoreCase(p.getValue())) {
-                            continue;
-                        } else {
-                            equiv = false;
-                            break;
-                        }
-                    }
-                    if (equiv == true) {
-                         return me.getUUID();
-                    }
-                }
-            } else {
-                // TODO: remote
-                System.out.println("\n\n finding characteristics from remote agent! \n\n");
-                String agent = v.getCubeAgent();
 
-                CMessage msg = new CMessage();
-                msg.setTo(agent);
-                msg.setObject("resolution");
-                msg.setBody("findUsingCharacteristics");
-                msg.setAttachement(v);
-                try {
-                    CMessage resultmsg = ((ResolverImpl)this.resolver).sendAndWait(msg);
-                    if (resultmsg != null) {
-                        if (resultmsg.getBody() != null) {
-                            this.agent.addExternalElement(resultmsg.getBody().toString(), resultmsg.getFrom());
-                            return resultmsg.getBody().toString();
-                        }
-                    }
-                } catch (TimeOutException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return null;
-    }
 
-    private String createInstance(Variable v) {
-        if (v != null) {
 
-            // apply binary constraints
-
-            Properties props = new Properties();
-            for (Property p : v.getProperties()) {
-                props.put(p.getName(), p.getValue());
-            }
-                try {
-                    ManagedElement me = agent.newManagedElement(v.getNamespace(), v.getName(), props);
-                    System.out.println(me.getTextualDescription());
-                    if (me != null) {
-                        if (!v.values.contains(me.getUUID())) {
-                            //agent.getRuntimeModel().add(me);
-                            for (Reference r : v.getReferences()) {
-                                if (me.getReference(r.getName()) == null) {
-                                    Reference tmp = me.addReference(r.getName(), r.isOnlyOne());
-                                    if (tmp != null) {
-                                        for (String re : r.getReferencedElements()) {
-                                            tmp.addReferencedElement(re);
-                                        }
-                                    }
-                                } else {
-                                    Reference tmp = me.getReference(r.getName());
-                                    if (tmp != null) {
-                                        for (String re : r.getReferencedElements()) {
-                                            tmp.addReferencedElement(re);
-                                        }
-                                    }
-                                }
-                            }
-
-                            return me.getUUID();
-                        }
-                    }
-
-                } catch (InvalidNameException e) {
-                    e.printStackTrace();
-                    return null;
-                } catch (PropertyExistException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-        }
-        return null;
-    }
 
     private void info(String msg) {
-        System.out.println("[RESOLVER] " + msg);
+        if (this.agent.getConfig().isDebug() == true) {
+            System.out.println("[RESOLVER] " + msg);
+        }
     }
 
     private boolean evaluateSubject(Variable var, Element e) {
@@ -589,7 +656,7 @@ public class ResolutionGraph {
             while (!stack.isEmpty()) {
                 Constraint c = stack.pop();
                 var.removeConstraint(c);
-                System.out.println("** removing characteristic constraint for subject var: " + c.getName());
+                //System.out.println("** removing characteristic constraint for subject var: " + c.getName());
             }
             return false;
         } else {
@@ -603,15 +670,15 @@ public class ResolutionGraph {
             for (Characteristic car : e.getUnaryCharacteristics()) {
                 Constraint c = addConstraint(var, car);
                 stack.push(c);
-                System.out.println("** adding characteristic constraint for subject var: " + c.getName());
+                //System.out.println("** adding characteristic constraint for subject var: " + c.getName());
                 if (c.check(this.agent) == false)
                     return false;
-                else
-                    System.out.println("** checked ok");
+                //else
+                    //System.out.println("** checked ok");
             }
             for (Characteristic car : e.getBinaryCharacteristics()) {
                 Constraint c = addConstraint(var, car);
-                System.out.println("** adding characteristic constraint for subject var: " + c.getName());
+                //System.out.println("** adding characteristic constraint for subject var: " + c.getName());
                 stack.push(c);
                 c.init(this.agent); // initialize object variable.
                 if (c.getObjectVariable().values.size() == 0)
@@ -629,11 +696,11 @@ public class ResolutionGraph {
 
         for (Characteristic car : e.getUnaryCharacteristics()) {
             Constraint c = addConstraint(var, car);
-            info("** adding unary characteristic constraint for subject var: " + c.getName());
+            //info("** adding unary characteristic constraint for subject var: " + c.getName());
         }
         for (Characteristic car : e.getBinaryCharacteristics()) {
             Constraint c = addConstraint(var, car);
-            info("** adding binary characteristic constraint for subject var: " + c.getName());
+            //info("** adding binary characteristic constraint for subject var: " + c.getName());
             buildObject(c.getObjectVariable(), (Element)car.getObject());
         }
         /*
@@ -687,25 +754,44 @@ public class ResolutionGraph {
     }
 
     private void print() {
-        if (root != null) {
-            System.out.println(root.getName());
-            for (Constraint c : root.getConstraints()) {
-                printconstraint(c, "\t");
+        if (this.agent.getConfig().isDebug() == true) {
+            info("The resolver will resolve the following Resolution Graph:");
+            String msg = "................................................................................\n";
+            if (root != null) {
+                msg += root.getName() + "\n";
+                for (Constraint c : root.getConstraints()) {
+                    if (c.isObjectiveConstraint())
+                        msg += printconstraint(c, "\t", true) + "\n";
+                    else
+                        msg += printconstraint(c, "\t", false) + "\n";
+                }
             }
+            msg += "................................................................................\n";
+            System.out.println(msg);
         }
     }
 
-    private void printconstraint(Constraint c, String indation) {
+    private String printconstraint(Constraint c, String indation, boolean objective) {
         if (c != null) {
             if (c.isUnaryConstraint()) {
-                System.out.println(indation + "---" + c.getName() + "---> (" + c.getObjectVariable().getValue() + ")");
+                if (objective == true)
+                    return (indation + "===" + c.getName() + "===> " + c.getObjectVariable().getValue() + " [" + c.getResolutionStrategyAsString() + "]\n");
+                else
+                    return (indation + "---" + c.getName() + "---> (" + c.getObjectVariable().getValue() + ")");
             } else {
-                System.out.println(indation + "---" + c.getName() + "---> " + c.getObjectVariable().getName());
+                String tmp = "";
+                if (objective == true)
+                    tmp += (indation + "===" + c.getName() + "===> " + c.getObjectVariable().getName()) + " [" + c.getResolutionStrategyAsString() + "]\n";
+                else
+                    tmp += (indation + "---" + c.getName() + "---> " + c.getObjectVariable().getName()) + "\n";
                 for (Constraint cc : c.getObjectVariable().getConstraints()) {
-                    printconstraint(cc, indation+"\t");
+                    tmp += printconstraint(cc, indation+"\t", false) + "\n";
                 }
+                return tmp;
             }
         }
+        return "";
     }
+
 
 }

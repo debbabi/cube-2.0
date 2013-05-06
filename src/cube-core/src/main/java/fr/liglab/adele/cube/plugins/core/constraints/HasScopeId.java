@@ -71,7 +71,7 @@ public class HasScopeId implements ConstraintResolver {
                     try {
                         subjectVariable.updateProperty(Scope.CORE_SCOPE_ID, objectVariable.getValue().toString());
                     } catch (PropertyNotExistException e1) {
-                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        e1.printStackTrace();
                     }
                 } catch (InvalidNameException e) {
                     e.printStackTrace();
@@ -80,7 +80,7 @@ public class HasScopeId implements ConstraintResolver {
                 try {
                     subjectVariable.updateProperty(Scope.CORE_SCOPE_ID, objectVariable.getValue().toString());
                 } catch (PropertyNotExistException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    e1.printStackTrace();
                 }
             }
         }

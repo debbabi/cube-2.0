@@ -47,7 +47,7 @@ public class CorePlugin extends AbstractPlugin {
     }
 
     public void run() {
-        System.out.println("---------------- Core Plugin -----------------");
+        //System.out.println("---------------- Core Plugin -----------------");
         Object master = getProperties().get("master");
         if (master != null) {
             if (master.toString().equalsIgnoreCase("true")) {

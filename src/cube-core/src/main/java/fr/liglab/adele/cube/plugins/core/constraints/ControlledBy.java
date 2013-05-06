@@ -42,7 +42,7 @@ public class ControlledBy implements ConstraintResolver {
     }
 
     public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        System.out.println("init using controlledby... ");
+        //System.out.println("init using controlledby... ");
         Object instance1_uuid = subjectVariable.getValue();
         if (instance1_uuid != null) {
             //System.out.println("init using controlledby... not null subject");
@@ -61,20 +61,20 @@ public class ControlledBy implements ConstraintResolver {
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        System.out.println("-1");
+        //System.out.println("-1");
         Object instance1_uuid = subjectVariable.getValue();
         Object instance2_uuid = objectVariable.getValue();
         if (instance1_uuid == null) System.out.println("subject NULL");
         if (instance2_uuid == null) System.out.println("object NULL");
         if (instance1_uuid != null && instance2_uuid != null) {
             RuntimeModelController rmController = agent.getRuntimeModelController();
-            System.out.println("0");
+            //System.out.println("0");
             if (rmController != null) {
-                System.out.println("1");
+                //System.out.println("1");
                 if (rmController.hasReferencedElements(instance1_uuid.toString(),
                         Scope.CORE_SCOPE_MASTER,
                         instance2_uuid.toString())) {
-                    System.out.println("2");
+                    //System.out.println("2");
                     /*
                     if (rmController.hasReferencedElements(instance2_uuid.toString(), Master.CORE_MASTER_SCOPE_LEADERS, instance1_uuid.toString())) {
                         return true;
@@ -180,12 +180,15 @@ public class ControlledBy implements ConstraintResolver {
      * @return
      */
     public String find(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+        //System.out.println("./././././././././././ ControlledBy.find ");
         Object instance2_uuid = objectVariable.getValue();
 
         if (instance2_uuid != null) {
+            //System.out.println("./././././././././././ from master: " + instance2_uuid);
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                List<String> sleaders = rmController.getReferencedElements(instance2_uuid.toString(), objectVariable.getValue().toString());
+                //System.out.println("./././././././././././ scope description: " + subjectVariable.getTextualDescription());
+                List<String> sleaders = rmController.getReferencedElements(instance2_uuid.toString(), subjectVariable.getProperty(Scope.CORE_SCOPE_ID));
                 for (String s : sleaders) {
                     if (!subjectVariable.hasValue(s)) {
                         return s;

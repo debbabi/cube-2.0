@@ -15,8 +15,12 @@ public interface RuntimeModel {
 
 
     public List<ManagedElement> getManagedElements();
+
+    public List<ManagedElement> getManagedElements(String namespace, String name);
+
     public List<ManagedElement> getManagedElements(int state);
 
+    public List<ManagedElement> getManagedElements(String namespace, String name, int state);
 
     public void addListener(RuntimeModelListener listener);
 

@@ -24,8 +24,12 @@ import fr.liglab.adele.cube.agent.RuntimeModelController;
 import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
 import fr.liglab.adele.cube.metamodel.InvalidNameException;
 
+import fr.liglab.adele.cube.metamodel.Reference;
+import fr.liglab.adele.cube.plugins.core.model.Component;
 import fr.liglab.adele.cube.plugins.core.model.Node;
 import fr.liglab.adele.cube.plugins.core.model.Scope;
+
+import java.util.List;
 
 /**
  * Author: debbabi
@@ -60,9 +64,9 @@ public class InScope implements ConstraintResolver {
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
                 if (rmController.hasReferencedElements(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
-                    if (rmController.hasReferencedElements(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
+                    //if (rmController.hasReferencedElements(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
                         return true;
-                    }
+                    //}
                 }
             }
         }
@@ -79,7 +83,24 @@ public class InScope implements ConstraintResolver {
      * @param objectVariable
      */
     public boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        if (subjectVariable != null && objectVariable != null && objectVariable.hasValue()) {
+
+            Reference ref = subjectVariable.getReference(Node.CORE_NODE_SCOPE);
+            if (ref == null) {
+                try {
+                    Reference r = subjectVariable.addReference(Node.CORE_NODE_SCOPE, true);
+                    if (r != null) {
+                        r.addReferencedElement(objectVariable.getValue().toString());
+                        return true;
+                    }
+                } catch (InvalidNameException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                ref.addReferencedElement(objectVariable.getValue().toString());
+                return true;
+            }
+        }
         return false;
     }
 
@@ -94,13 +115,15 @@ public class InScope implements ConstraintResolver {
     public boolean performObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         Object instance1_uuid = subjectVariable.getValue();
         Object instance2_uuid = objectVariable.getValue();
-
+        //System.out.println("!!!!!!!!!!!! perform inScope ");
         if (instance1_uuid != null && instance2_uuid != null) {
+            //System.out.println("!!!!!!!!!!!! perform inScope ...");
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
                 try {
                     if (rmController.addReference(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
                         if (rmController.addReference(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
+                            //System.out.println("!!!!!!!!!!!! perform inScope OK!");
                             return true;
                         }
                     }
@@ -145,6 +168,22 @@ public class InScope implements ConstraintResolver {
      * @return
      */
     public String find(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+        //System.out.println("./././././././././././ inScope.find ");
+        Object instance2_uuid = objectVariable.getValue();
+
+        if (instance2_uuid != null) {
+            //System.out.println("./././././././././././ from scope: " + instance2_uuid);
+            RuntimeModelController rmController = agent.getRuntimeModelController();
+            if (rmController != null) {
+                //System.out.println("./././././././././././ node description: " + subjectVariable.getTextualDescription());
+                List<String> sleaders = rmController.getReferencedElements(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES);
+                for (String s : sleaders) {
+                    if (!subjectVariable.hasValue(s)) {
+                        return s;
+                    }
+                }
+            }
+        }
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

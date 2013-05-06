@@ -58,7 +58,7 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
     }
 
     private void resolveNewInstance(ManagedElement instance) {
-        System.out.println("[RESOLVER] resolve.new.unmanaged.instance: " + instance.getUUID());
+
         /*
          * Create the root variable that contains the newly created instance (to be resolved).
          */
@@ -77,6 +77,8 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
         /*
          * Start the resolution processs.
          */
+        info("resolving new instance: " + instance.getUri() + " ...");
+        info("");
         if (constraintsGraph.resolve()) {
 
             validateSolution(constraintsGraph);
@@ -91,8 +93,9 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
      * @param graph
      */
     void validateSolution(ResolutionGraph graph) {
-         System.out.println("\nvalidating solution..\n");
-
+        info("");
+        info("validating solution..");
+        info("\n");
         if (graph != null) {
             if (graph.getRoot() != null) {
                 validateVariable(graph.getRoot());
@@ -113,12 +116,34 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
             //
             Object uuid =v.getValue();
             if (uuid != null) {
-                ManagedElement me = agent.getRuntimeModelController().getLocalElement(uuid.toString());
-                if (me != null) {
-                    if (me.getState() == ManagedElement.UNCHECKED) {
-                        ((AbstractManagedElement)me).validate();
-                    } else if (me.getState() == ManagedElement.UNMANAGED) {
-                        agent.getRuntimeModel().add(me);
+                String agenturi = getCubeAgent().getRuntimeModelController().getAgentOfElement(uuid.toString());
+                if (getCubeAgent().getUri().equalsIgnoreCase(agenturi)) {
+                    ManagedElement me = agent.getRuntimeModelController().getLocalElement(uuid.toString());
+                    if (me != null) {
+                        if (me.getState() == ManagedElement.UNCHECKED) {
+                            ((AbstractManagedElement)me).validate();
+                        } else if (me.getState() == ManagedElement.UNMANAGED) {
+                            agent.getRuntimeModel().add(me);
+                        }
+                    }
+                }
+                else {
+                    info("... remote createValue");
+
+
+                    CMessage msg = new CMessage();
+                    msg.setTo(agenturi);
+                    msg.setObject("resolution");
+                    msg.setBody("validateVariable");
+                    msg.setAttachement(v);
+                    try {
+                        System.out.println("sending..." + msg.toString());
+                        System.out.println(v.getTextualDescription());
+                        send(msg);
+                    } catch (TimeOutException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
                 }
             }
@@ -136,57 +161,10 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
 
     }
 
-    /**
-     * Recursive backtracking search algo.
-     * Returns a solution, or failure.
-     *
-     * uses domain-specific heuristic functions derived from the knowledge of the problem.
-     *
-     * propagating information through constraints:
-     *   Whenever a variable X is assigned, the forxard checking process looks at each unassigned
-     *   variable Y that is connected to X by a constraint and deletes from Y's domain any value
-     *   that is in consistent with the value chosen for X.
-     *
-     * Chronological backtracking:
-     *   When a branch of the search fails! back up to the preceding variable and try a different value for it.
-     *
-     *
-     *
-     *
-     * @param csp
-     */
-    void backtrackingSearch(ResolutionGraph csp) {
-        /**
-         * if assignement is complete then return assignement
-         * var = select_unassigned_variable(variables[constraintsGraph], assignement, csp) do
-         * for each 'value' in Order_Domain_Values(var, assignement, csp) do
-         *   if 'value' is consistent with assignment according to Constraints[csp] then
-         *      add {var = value} to assignement
-         *      result = backtrackingSearch(assignement, csp)
-         *      if (result != failure then return result;
-         *      remove {var = value} from assignement
-         * return failure
-         */
-    }
-
-    void BT() {
-        /**
-         * Foreach Val in D[i]
-         *      Assignments[i] = val.
-         *      Consistent = true
-         *      for h=1 To i-1 While Consistent
-         *             Consistent = Test(i, h)
-         *      if Consistent
-         *          if i = n
-         *                 Show ( Solution() )
-         *          Else
-         *              BT(i+1)
-         *      return false;
-         */
-    }
-
-    public CubeAgent getCubeAgent() {
-        return this.agent;
+    private void info(String msg) {
+        if (this.agent.getConfig().isDebug() == true) {
+            System.out.println("[RESOLVER] " + msg);
+        }
     }
 
     public void receiveMessage(CMessage msg) {
@@ -209,19 +187,27 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
     protected void handleMessage(CMessage msg) throws Exception {
 
         if (msg != null) {
-            System.out.println("\n\n received message to resolve! \n\n "+msg.toString()+" \n\n");
+            //System.out.println("\n\n received message to resolve! \n\n "+msg.toString()+" \n\n");
             if (msg.getBody() != null && msg.getBody().toString().equalsIgnoreCase("findUsingCharacteristics")) {
                 if (msg.getAttachement() != null && msg.getAttachement() instanceof Variable) {
                     ResolutionGraph constraintsGraph = new ResolutionGraph(this);
                     Variable v = (Variable)msg.getAttachement();
-                    String result = constraintsGraph.findUsingCharacteristics(v);
+                    constraintsGraph.setRoot(v);
 
+                    String result = constraintsGraph.find();
+                    //String result = constraintsGraph.findUsingCharacteristics(v);
+
+                    //System.out.println("found:" + result);
                     CMessage resmsg = new CMessage();
                     resmsg.setTo(msg.getFrom());
+                    resmsg.setFrom(getCubeAgent().getUri());
+                    resmsg.setReplyTo(getCubeAgent().getUri());
                     resmsg.setCorrelation(msg.getCorrelation());
                     resmsg.setObject(msg.getObject());
                     resmsg.setBody(result);
                     try {
+                        //System.out.println("in msg:" + msg.toString());
+                        //System.out.println("out msg:" + resmsg.toString());
                         getCubeAgent().getCommunicator().sendMessage(resmsg);
                     } catch (CommunicationException e) {
                         // TODO Auto-generated catch block
@@ -230,6 +216,41 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
+                }
+            } else if (msg.getBody() != null && msg.getBody().toString().equalsIgnoreCase("createUsingCharacteristics")) {
+                if (msg.getAttachement() != null && msg.getAttachement() instanceof Variable) {
+                    ResolutionGraph constraintsGraph = new ResolutionGraph(this);
+                    Variable v = (Variable)msg.getAttachement();
+                    constraintsGraph.setRoot(v);
+
+                    String result = constraintsGraph.create();
+                    //String result = constraintsGraph.findUsingCharacteristics(v);
+
+                    //System.out.println("found:" + result);
+                    CMessage resmsg = new CMessage();
+                    resmsg.setTo(msg.getFrom());
+                    resmsg.setFrom(getCubeAgent().getUri());
+                    resmsg.setReplyTo(getCubeAgent().getUri());
+                    resmsg.setCorrelation(msg.getCorrelation());
+                    resmsg.setObject(msg.getObject());
+                    resmsg.setBody(result);
+                    try {
+                        //System.out.println("in msg:" + msg.toString());
+                        //System.out.println("out msg:" + resmsg.toString());
+                        getCubeAgent().getCommunicator().sendMessage(resmsg);
+                    } catch (CommunicationException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }  else if (msg.getBody() != null && msg.getBody().toString().equalsIgnoreCase("validateVariable")) {
+                if (msg.getAttachement() != null && msg.getAttachement() instanceof Variable) {
+
+                    Variable v = (Variable)msg.getAttachement();
+                    validateVariable(v);
                 }
             }
         }
@@ -289,4 +310,58 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
     private static long correlation = 1;
     private long waitingCorrelation = -1;
 
+
+
+    /**
+     * Recursive backtracking search algo.
+     * Returns a solution, or failure.
+     *
+     * uses domain-specific heuristic functions derived from the knowledge of the problem.
+     *
+     * propagating information through constraints:
+     *   Whenever a variable X is assigned, the forxard checking process looks at each unassigned
+     *   variable Y that is connected to X by a constraint and deletes from Y's domain any value
+     *   that is in consistent with the value chosen for X.
+     *
+     * Chronological backtracking:
+     *   When a branch of the search fails! back up to the preceding variable and try a different value for it.
+     *
+     *
+     *
+     *
+     * @param csp
+     */
+    void backtrackingSearch(ResolutionGraph csp) {
+        /**
+         * if assignement is complete then return assignement
+         * var = select_unassigned_variable(variables[constraintsGraph], assignement, csp) do
+         * for each 'value' in Order_Domain_Values(var, assignement, csp) do
+         *   if 'value' is consistent with assignment according to Constraints[csp] then
+         *      add {var = value} to assignement
+         *      result = backtrackingSearch(assignement, csp)
+         *      if (result != failure then return result;
+         *      remove {var = value} from assignement
+         * return failure
+         */
+    }
+
+    void BT() {
+        /**
+         * Foreach Val in D[i]
+         *      Assignments[i] = val.
+         *      Consistent = true
+         *      for h=1 To i-1 While Consistent
+         *             Consistent = Test(i, h)
+         *      if Consistent
+         *          if i = n
+         *                 Show ( Solution() )
+         *          Else
+         *              BT(i+1)
+         *      return false;
+         */
+    }
+
+    public CubeAgent getCubeAgent() {
+        return this.agent;
+    }
 }

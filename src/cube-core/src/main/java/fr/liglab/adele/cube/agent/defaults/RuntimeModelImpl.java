@@ -69,12 +69,33 @@ public class RuntimeModelImpl implements RuntimeModel {
         return result;
     }
 
+    public List<ManagedElement> getManagedElements(String namespace, String name) {
+        List<ManagedElement> result = new ArrayList<ManagedElement>();
+        for (String key : this.elements.keySet()) {
+            if (this.elements.get(key).getNamespace().equalsIgnoreCase(namespace)
+                    && this.elements.get(key).getName().equalsIgnoreCase(name))
+                result.add(this.elements.get(key));
+        }
+        return result;
+    }
+
     public List<ManagedElement> getManagedElements(int state) {
         List<ManagedElement> result = new ArrayList<ManagedElement>();
         for (String key : this.elements.keySet()) {
             if (this.elements.get(key).getState() == state) {
                 result.add(this.elements.get(key));
             }
+        }
+        return result;
+    }
+
+    public List<ManagedElement> getManagedElements(String namespace, String name, int state) {
+        List<ManagedElement> result = new ArrayList<ManagedElement>();
+        for (String key : this.elements.keySet()) {
+            if (this.elements.get(key).getNamespace().equalsIgnoreCase(namespace)
+                    && this.elements.get(key).getName().equalsIgnoreCase(name)
+                    && this.elements.get(key).getState() == state)
+                result.add(this.elements.get(key));
         }
         return result;
     }

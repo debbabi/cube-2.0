@@ -58,6 +58,7 @@ public class Constraint implements Serializable {
 
     private int resolutionStrategy = FIND;
 
+
     public Constraint(Variable subjectVar, String namespace, String name, Variable objectVar) {
         this(subjectVar, namespace, name, objectVar, false);
     }
@@ -114,14 +115,21 @@ public class Constraint implements Serializable {
      * Call the real constraint identified by namespace:name.
      */
     public void init(CubeAgent agent) {
+        //System.out.println(".... init");
         //if (objectVariable.isPrimitive() == false) {
-            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
-            if (e != null) {
-                ConstraintResolver cr = e.getConstraintResolver(name);
-                if (cr != null) {
+        Plugin e = agent.getPlugin(namespace);
+        if (e != null) {
+            ConstraintResolver cr = e.getConstraintResolver(name);
+            if (cr != null) {
+                //System.out.println("1");
+                if (objectVariable.hasValue() == false) {
+                    //System.out.println("2");
                     cr.init(agent, subjectVariable, objectVariable);
                 }
+                //System.out.println("3");
             }
+        }
+        //System.out.println("4");
         //}
     }
 
@@ -133,17 +141,23 @@ public class Constraint implements Serializable {
     public boolean check(CubeAgent agent) {
         init(agent);
         //if (subjectVariable.hasValue() && objectVariable.hasValue()) {
-            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
-            if (e != null) {
-                ConstraintResolver cr = e.getConstraintResolver(name);
-                if (cr != null) {
-                    return cr.check(agent, subjectVariable, objectVariable);
-                } else {
-                    System.out.println("[WARNING] the resolver constraint '"+name+"' was not found!");
-                }
+        //System.out.println(".../.......check with " + namespace + ":" + name);
+
+        Plugin e = agent.getPlugin(namespace);
+        if (e != null) {
+            //System.out.println("[INFO] the resolver constraint '"+name+"' was found!");
+            ConstraintResolver cr = e.getConstraintResolver(name);
+            if (cr != null) {
+                //System.out.println("[INFO] the resolver constraint '"+name+"' was found!");
+                 //if (objectVariable.hasValue() == false)
+                cr.init(agent, subjectVariable, objectVariable);
+                return cr.check(agent, subjectVariable, objectVariable);
             } else {
-                System.out.println("[WARNING] the extension '"+namespace+"' was not found!");
+                System.out.println("[WARNING] the resolver constraint '"+name+"' was not found!");
             }
+        } else {
+            System.out.println("[WARNING] the plugin '"+namespace+"' was not found!");
+        }
         /*} else {
             System.out.println("[WARNING] cannot check constraint with null values!");
         } */
@@ -152,7 +166,7 @@ public class Constraint implements Serializable {
 
     public void applyDescription(CubeAgent agent) {
         if (objectVariable.hasValue()) {
-            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
+            Plugin e = agent.getPlugin(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
@@ -166,9 +180,9 @@ public class Constraint implements Serializable {
      * If subject or object are remote instances?
      */
     public void performObjective(CubeAgent agent) {
-        System.out.println(".............................apply objective:"+getName()+"...........................");
+        //System.out.println(".............................apply objective:"+getName()+"...........................");
         if (subjectVariable.hasValue() && objectVariable.hasValue()) {
-            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
+            Plugin e = agent.getPlugin(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
@@ -179,9 +193,9 @@ public class Constraint implements Serializable {
     }
 
     public void cancelObjective(CubeAgent agent) {
-        System.out.println(".............................cancel objective:"+getName()+"...........................");
+        //System.out.println(".............................cancel objective:"+getName()+"...........................");
         if (subjectVariable.values.size() > 0 && objectVariable.values.size() > 0) {
-            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
+            Plugin e = agent.getPlugin(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
@@ -195,8 +209,8 @@ public class Constraint implements Serializable {
      * Find subject variable when knowing the object var.
      */
     public String find(CubeAgent agent) {
-        if (subjectVariable.values.size() > 0 && objectVariable.values.size() > 0) {
-            Plugin e = this.subjectVariable.getAgent().getPlugin(namespace);
+        if (objectVariable.hasValue()) {
+            Plugin e = agent.getPlugin(namespace);
             if (e != null) {
                 ConstraintResolver cr = e.getConstraintResolver(name);
                 if (cr != null) {
@@ -205,5 +219,12 @@ public class Constraint implements Serializable {
             }
         }
         return null;
+    }
+
+    public String getResolutionStrategyAsString() {
+        if (this.resolutionStrategy == FIND) return "FIND";
+        if (this.resolutionStrategy == FIND_OR_CREATE) return "FIND_OR_CREATE";
+        if (this.resolutionStrategy == CREATE) return "CREATE";
+        return "";
     }
 }

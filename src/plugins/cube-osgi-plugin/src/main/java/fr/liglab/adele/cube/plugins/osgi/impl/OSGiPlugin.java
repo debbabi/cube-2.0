@@ -47,7 +47,7 @@ public class OSGiPlugin extends AbstractPlugin {
     }
 
     public void run() {
-        System.out.println("---------------- OSGi Plugin -----------------");
+        //System.out.println("---------------- OSGi Plugin -----------------");
         BundleContext btx = getCubeAgent().getPlatform().getBundleContext();
         String node_type = btx.getProperty(CUBE_NODE_TYPE);
         String node_id = btx.getProperty(CUBE_NODE_ID);
