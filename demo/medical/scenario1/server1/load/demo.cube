@@ -12,6 +12,7 @@
 			<property name="master" value="true"/>
 		</plugin>
 		<plugin id="fr.liglab.adele.cube.osgi"/>
+		<plugin id="fr.liglab.adele.cube.rm.monitoring"/>
 	</plugins>
   </agent>
 </cube>

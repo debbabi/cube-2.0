@@ -30,6 +30,7 @@
 
 	<modules>
         <module>cube-osgi-plugin</module>
+		<module>cube-rm-monitoring-plugin</module>
 	</modules>	
 
 </project>

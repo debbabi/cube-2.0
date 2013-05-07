@@ -16,24 +16,17 @@
  */
 
 
-package fr.liglab.adele.cube.agent;
+package fr.liglab.adele.cube.plugins.rm.monitoring;
 
-import fr.liglab.adele.cube.metamodel.Notification;
-import fr.liglab.adele.cube.agent.defaults.RuntimeModelImpl;
+import fr.liglab.adele.cube.plugins.PluginFactory;
 
 /**
  * Author: debbabi
- * Date: 4/27/13
- * Time: 1:47 PM
+ * Date: 5/6/13
+ * Time: 7:21 PM
  */
-public interface RuntimeModelListener {
-
-    int NEW_UNMANAGED_INSTANCE = 0;
-    int NEW_UNCHECKED_INSTANCE = 1;
-    int NEW_VALID_INSTANCE = 2;
-    int REMOVED_UNCHECKED_INSTANCE = 3;
-    int REMOVED_VALID_INSTANCE = 4;
-
-
-    public void update(RuntimeModel rm, Notification notification);
+public interface RMMonitoringPluginFactory extends PluginFactory {
+    String NAME = "rm";
+    String PREFIX = "rm";
+    String NAMESPACE = "fr.liglab.adele.cube.rm.monitoring";
 }

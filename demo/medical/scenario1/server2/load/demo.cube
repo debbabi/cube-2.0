@@ -10,6 +10,7 @@
 	<plugins>
 		<plugin id="fr.liglab.adele.cube.core"/>
 		<plugin id="fr.liglab.adele.cube.osgi"/>
+		<plugin id="fr.liglab.adele.cube.rm.monitoring"/>
 	</plugins>
   </agent>
 </cube>

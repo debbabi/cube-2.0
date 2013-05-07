@@ -63,6 +63,12 @@ public class Variable extends AbstractManagedElement {
             this.values.push(value.toString());
     }
 
+    /**
+     * Not primitive variable.
+     * @param agent
+     * @param namespace
+     * @param name
+     */
     public Variable(CubeAgent agent, String namespace, String name) {
         super(agent);
         this.namespace = namespace;
@@ -70,17 +76,6 @@ public class Variable extends AbstractManagedElement {
         this.primitive = false;
         this.agent = agent;
     }
-
-    /*
-    public Variable(CubeAgent agent, String value, boolean primitive) {
-        super(agent);
-        if (value != null && value instanceof ManagedElement) {
-            this.namespace = ((ManagedElement)value).getNamespace();
-            this.name = ((ManagedElement)value).getName();
-        }
-        this.values.push(value.toString());
-        this.primitive = primitive;
-    } */
 
     public boolean isPrimitive() {
         return primitive;
@@ -91,11 +86,6 @@ public class Variable extends AbstractManagedElement {
     public CubeAgent getAgent() {
         return this.agent;
     }
-
-    /*
-    public void setValue(ManagedElement value) {
-        this.value = value;
-    }   */
 
     public void setValue(String uuid) {
         if (uuid != null) {
@@ -179,21 +169,6 @@ public class Variable extends AbstractManagedElement {
         }
     }
 
-    /*
-    public void addAlreadyTestedValue(String value) {
-        if (value != null)
-            values.push(value);
-    }
 
-    public String getTestedValue() {
-        return this.values.pop();
-    }
 
-    public List<String> getAlreadyTestedValues() {
-        return values.subList(0, values.size());
-    }
-
-    public boolean isTestedValue(String uri) {
-        return this.values.contains(uri);
-    } */
 }

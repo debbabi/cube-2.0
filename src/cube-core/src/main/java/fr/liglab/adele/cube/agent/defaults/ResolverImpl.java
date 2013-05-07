@@ -36,55 +36,60 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
 
     private CubeAgent agent;
 
+    //private Thread thread;
+    //private RuntimeModelChecker checker;
+
     public ResolverImpl(CubeAgent agent) {
         this.agent = agent;
         if (agent == null)
             throw new NullPointerException();
         if (agent != null) {
             agent.getRuntimeModel().addListener(this);
-
         }
+        //checker = new RuntimeModelChecker(this);
     }
 
-    public void update(RuntimeModelImpl rm, Notification notification) {
+    public void update(RuntimeModel rm, Notification notification) {
         switch (notification.getNotificationType()) {
             case RuntimeModelListener.NEW_UNCHECKED_INSTANCE: {
                 Object instance = notification.getNewValue();
                 if (instance != null && instance instanceof ManagedElement) {
-                    resolveNewInstance((ManagedElement)instance);
+                    resolveUncheckedInstance((ManagedElement) instance);
                 }
             } break;
         }
     }
 
-    private void resolveNewInstance(ManagedElement instance) {
+    void resolveUncheckedInstance(ManagedElement instance) {
 
-        /*
-         * Create the root variable that contains the newly created instance (to be resolved).
-         */
-        Variable var = new Variable(agent, instance.getNamespace(), instance.getName());
-        var.setValue(instance.getUUID());
+        if (instance != null && instance.getState() == ManagedElement.UNCHECKED) {
+            /*
+             * Create the root variable that contains the newly created instance (to be resolved).
+             */
+            Variable var = new Variable(agent, instance.getNamespace(), instance.getName());
+            var.setValue(instance.getUUID());
 
-        /*
-         * Create a Resolution Graph (Constraints Graph).
-         */
-        ResolutionGraph constraintsGraph = new ResolutionGraph(this);
-        /*
-         * Set the root variable.
-         */
-        constraintsGraph.setRoot(var);
+            /*
+             * Create a Resolution Graph (Constraints Graph).
+             */
+            ResolutionGraph constraintsGraph = new ResolutionGraph(this);
+            /*
+             * Set the root variable.
+             */
+            constraintsGraph.setRoot(var);
 
-        /*
-         * Start the resolution processs.
-         */
-        info("resolving new instance: " + instance.getUri() + " ...");
-        info("");
-        if (constraintsGraph.resolve()) {
+            /*
+             * Start the resolution processs.
+             */
+            info("resolving new instance: " + instance.getUri() + " ...");
+            info("");
+            if (constraintsGraph.resolve()) {
 
-            validateSolution(constraintsGraph);
+                validateSolution(constraintsGraph);
 
-        } else {
-
+            } else {
+                getCubeAgent().removeUnmanagedElements();
+            }
         }
     }
 
@@ -128,7 +133,7 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
                     }
                 }
                 else {
-                    info("... remote createValue");
+                    //info("... remote createValue");
 
 
                     CMessage msg = new CMessage();
@@ -137,8 +142,8 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
                     msg.setBody("validateVariable");
                     msg.setAttachement(v);
                     try {
-                        System.out.println("sending..." + msg.toString());
-                        System.out.println(v.getTextualDescription());
+                        //System.out.println("sending..." + msg.toString());
+                        //System.out.println(v.getTextualDescription());
                         send(msg);
                     } catch (TimeOutException e) {
                         e.printStackTrace();
@@ -224,6 +229,10 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
                     constraintsGraph.setRoot(v);
 
                     String result = constraintsGraph.create();
+                    if (result == null) {
+                        getCubeAgent().removeUnmanagedElements();
+                    }
+
                     //String result = constraintsGraph.findUsingCharacteristics(v);
 
                     //System.out.println("found:" + result);
@@ -364,4 +373,5 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
     public CubeAgent getCubeAgent() {
         return this.agent;
     }
+
 }

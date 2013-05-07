@@ -101,4 +101,9 @@ public interface CubeAgent {
     public void addExternalElement(String element_uuid, String agent_uri);
 
     public String getExternalAgentUri(String managed_element_uuid);
+
+    /**
+     * Remove all UNMANAGED Elements.
+     */
+    void removeUnmanagedElements();
 }

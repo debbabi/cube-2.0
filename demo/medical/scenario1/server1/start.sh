@@ -33,6 +33,8 @@ fi
 cp ../../../../bin/cube-core-2.0.jar bundle
 cp ../../../../bin/cube-console-2.0.jar bundle
 cp ../../../../bin/cube-osgi-plugin-2.0.jar bundle
+cp ../../../../bin/cube-rm-monitoring-plugin-2.0.jar bundle
+
 #cp ../../../../bin/web-console-branding-2.0.jar bundle
 #cp ../../../../bin/web-console-2.0.jar bundle
 # cp ../../../../bin/cube-internal-monitoring-extension-2.0.jar bundle

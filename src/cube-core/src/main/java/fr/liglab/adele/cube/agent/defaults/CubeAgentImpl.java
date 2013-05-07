@@ -92,6 +92,12 @@ public class CubeAgentImpl implements CubeAgent {
      * Life Controller.
      */
     private LifeController lifeController;
+
+    /**
+     * Runtime Model Checker.
+     */
+    private RuntimeModelChecker checker;
+
     /**
      * Local Id
      */
@@ -192,7 +198,8 @@ public class CubeAgentImpl implements CubeAgent {
             }
         }
 
-
+        // runtime model checker
+        this.checker = new RuntimeModelChecker(this);
     }
 
     public String getUri() {
@@ -316,6 +323,13 @@ public class CubeAgentImpl implements CubeAgent {
         return this.externalElements.get(managed_element_uuid);
     }
 
+    /**
+     * Remove all UNMANAGED Elements.
+     */
+    public synchronized void removeUnmanagedElements() {
+        this.unmanagedElements.clear();
+    }
+
     public void run() {
         System.out.println("[INFO] >>>>>>>>> starting agent: " + uri.toString());
         if (this.communicator != null) {
@@ -330,6 +344,9 @@ public class CubeAgentImpl implements CubeAgent {
         for (Plugin ex: this.getPlugins()) {
             ex.run();
         }
+        if (this.checker != null) {
+            this.checker.start();
+        }
     }
 
     public void stop() {
@@ -341,6 +358,9 @@ public class CubeAgentImpl implements CubeAgent {
             this.lifeController.stop();
         if (this.communicator != null)
             this.communicator.stop();
+        if (this.checker != null) {
+            this.checker.stop();
+        }
     }
 
     public void destroy() {
@@ -352,5 +372,12 @@ public class CubeAgentImpl implements CubeAgent {
             this.lifeController.destroy();
         if (this.communicator != null)
             this.communicator.destroy();
+        if (this.checker != null) {
+            this.checker.destroy();
+        }
+    }
+
+    Resolver getResolver() {
+        return this.resolver;
     }
 }

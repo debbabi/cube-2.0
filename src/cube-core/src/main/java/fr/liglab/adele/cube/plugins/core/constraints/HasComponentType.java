@@ -44,23 +44,23 @@ public class HasComponentType implements ConstraintResolver {
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        System.out.println("HasComponentType.check : " + subjectVariable.getValue() + " - " + objectVariable.getValue());
+        //System.out.println("HasComponentType.check : " + subjectVariable.getValue() + " - " + objectVariable.getValue());
         Object instance1_uuid = subjectVariable.getValue();
         Object type = objectVariable.getValue();
-        System.out.println("1");
+        //System.out.println("1");
         if (instance1_uuid != null && type != null) {
-            System.out.println("2");
+            //System.out.println("2");
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                System.out.println("3");
+                //System.out.println("3");
                 String value = rmController.getPropertyValue(instance1_uuid.toString(), Component.CORE_COMPONENT_TYPE);
                 if (value != null && value.equalsIgnoreCase(type.toString())) {
-                    System.out.println("4 TRUE");
+                    //System.out.println("4 TRUE");
                     return true;
                 }
             }
         }
-        System.out.println("5");
+        //System.out.println("5");
         return false;
     }
 

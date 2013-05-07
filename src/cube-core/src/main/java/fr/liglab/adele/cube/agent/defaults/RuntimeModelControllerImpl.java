@@ -99,10 +99,10 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
     public String getPropertyValue(String managed_element_uuid, String name) {
         ManagedElement me1 = getLocalElement(managed_element_uuid);
         if (me1 != null) {
-            System.out.println(".... get property value (local) of element: " + managed_element_uuid);
+            //System.out.println(".... get property value (local) of element: " + managed_element_uuid);
             return me1.getProperty(name);
         } else {
-            System.out.println(".... get property value (remote) of element: " + managed_element_uuid);
+            //System.out.println(".... get property value (remote) of element: " + managed_element_uuid);
             String auri = agent.getExternalAgentUri(managed_element_uuid);
             if (auri != null) {
                 CMessage msg = new CMessage();
@@ -195,16 +195,16 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                     CMessage resultmsg = sendAndWait(msg);
                     if (resultmsg != null) {
                         if (resultmsg.getBody() != null) {
-                            System.out.println(resultmsg.getBody());
+                            //System.out.println(resultmsg.getBody());
                             String[] tmp = resultmsg.getBody().toString().split(",");
                             for (int i=0; i<tmp.length; i++) {
-                                System.out.println(tmp[i]);
+                                //System.out.println(tmp[i]);
                                 if (tmp[i] != null && tmp[i].length()>0) {
                                     String[] tmp2 = tmp[i].split("###");
                                     String agenturi = tmp2[0];
-                                    System.out.println(agenturi);
+                                    //System.out.println(agenturi);
                                     String elementuuid = tmp2[1];
-                                    System.out.println(elementuuid);
+                                    //System.out.println(elementuuid);
                                     if (!agenturi.equalsIgnoreCase(getCubeAgent().getUri())) {
                                         this.agent.addExternalElement(elementuuid, agenturi);
                                     }
@@ -227,14 +227,14 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
     public boolean addReference(String managed_element_uuid, String reference_name, String referenced_element_uuid) throws InvalidNameException {
         ManagedElement me1 = getLocalElement(managed_element_uuid);
         if (me1 != null) {
-            System.out.println("!!!!!!!!!!!! add reference (local): " + managed_element_uuid + " - " + reference_name + " - " + referenced_element_uuid.toString());
+            //System.out.println("!!!!!!!!!!!! add reference (local): " + managed_element_uuid + " - " + reference_name + " - " + referenced_element_uuid.toString());
             Reference r = me1.addReference(reference_name, false);
             if (r != null) {
                 r.addReferencedElement(referenced_element_uuid);
                 return true;
             }
         } else {
-            System.out.println("!!!!!!!!!!!! add reference (remote): " + managed_element_uuid + " - " + reference_name + " - " + referenced_element_uuid.toString());
+            //System.out.println("!!!!!!!!!!!! add reference (remote): " + managed_element_uuid + " - " + reference_name + " - " + referenced_element_uuid.toString());
             String auri = agent.getExternalAgentUri(managed_element_uuid);
             if (auri != null) {
                 CMessage msg = new CMessage();
@@ -245,10 +245,10 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                 msg.addHeader("name", reference_name);
                 msg.addHeader("refuuid", referenced_element_uuid);
                 try {
-                    System.out.println("sending msg: " + msg.toString());
+                    //System.out.println("sending msg: " + msg.toString());
                     CMessage resultmsg = sendAndWait(msg);
                     if (resultmsg != null) {
-                        System.out.println(resultmsg.toString());
+                        //System.out.println(resultmsg.toString());
                         if (resultmsg.getBody() != null) {
                             if (resultmsg.getBody().toString().equalsIgnoreCase("true")) {
                                 return true;
@@ -302,13 +302,13 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
     public boolean hasReferencedElements(String managed_element_uuid, String reference_name, String referenced_element_uuri) {
         ManagedElement me1 = getLocalElement(managed_element_uuid);
         if (me1 != null) {
-            System.out.println("... hasReferencedElements (local)");
+            //System.out.println("... hasReferencedElements (local)");
             Reference r = me1.getReference(reference_name);
             if (r != null) {
                 return r.hasReferencedElement(referenced_element_uuri);
             }
         }  else {
-            System.out.println("... hasReferencedElements (remote)");
+            //System.out.println("... hasReferencedElements (remote)");
             String auri = agent.getExternalAgentUri(managed_element_uuid);
             if (auri != null) {
                 CMessage msg = new CMessage();
@@ -334,19 +334,15 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
         }
         return false;
     }
-                    /*
-    public List<String> getElements(String agentUri, String namespace, String name) {
-        List<String> result = new ArrayList<String>();
-        if (this.agent.getUri().equalsIgnoreCase(agentUri)) {
-            for (ManagedElement me : this.agent.getRuntimeModel().getManagedElements()) {
-                result.add(me.getUUID());
-            }
-        } else {
-            // remote find
 
+    public boolean areSimilar(String instance_uuid1, String instance_uuid2) {
+        ManagedElement m1 = getLocalElement(instance_uuid1);
+        ManagedElement m2 = getLocalElement(instance_uuid2);
+        if (m1 != null && m2 != null) {
+            return m1.isSimilar(m2);
         }
-        return result;
-    }                 */
+        return false;
+    }
 
     public ManagedElement getLocalElement(String managed_element_uuid) {
         ManagedElement me = agent.getRuntimeModel().getManagedElement(managed_element_uuid);

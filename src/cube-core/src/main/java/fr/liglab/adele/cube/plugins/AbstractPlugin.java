@@ -37,7 +37,7 @@ public abstract class AbstractPlugin implements Plugin {
     private Properties properties = new Properties();
 
     public AbstractPlugin(CubeAgent agent, PluginFactory bundle, Properties properties) {
-        this.uri = agent.getUri() + "/ext/" + bundle.getName();
+        this.uri = agent.getUri() + "/plugin/" + bundle.getName();
         this.agent = agent;
         this.bundle = bundle;
         if (properties != null) {

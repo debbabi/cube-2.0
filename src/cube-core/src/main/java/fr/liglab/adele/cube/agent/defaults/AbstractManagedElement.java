@@ -192,6 +192,23 @@ public abstract class AbstractManagedElement extends Observable implements Manag
     }
 
     /**
+     * Checks if the Managed Element has the given property.
+     *
+     * @param name Property name
+     * @return TRUE if it has the provided property.
+     */
+    public boolean hasProperty(String name) {
+        if (name != null) {
+            for(Property p : this.properties) {
+                if (p.getName().equalsIgnoreCase(name)) {
+                    return true;
+                }
+            }
+        }
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
      * Adding property
      * @param name
      * @param value
@@ -258,6 +275,23 @@ public abstract class AbstractManagedElement extends Observable implements Manag
         return null;
     }
 
+    /**
+     * Checks if the Managed Element has the given reference.
+     *
+     * @param name Reference name
+     * @return TRUE if it has the provided reference name.
+     */
+    public boolean hasReference(String name) {
+        if (name != null) {
+            for (Reference r : getReferences()) {
+                if (r.getName().equalsIgnoreCase(name)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public Reference addReference(String name, boolean onlyOne) throws InvalidNameException {
         Reference r = getReference(name);
         if (getReference(name) == null) {
@@ -293,18 +327,71 @@ public abstract class AbstractManagedElement extends Observable implements Manag
         return msg;
     }
 
-    /*
-    public boolean addReferencedElement(String referenceName, String referencedElementURI) {
-        if (referenceName == null || referencedElementURI == null) {
-            return false;
-        }
-        Reference r = getReference(referenceName);
-        if (r == null) {
+    public synchronized boolean removeEmptyProperties() {
+        List<Property> toBeRemoved = new ArrayList<Property>();
+        for (Property p : getProperties()) {
+            if (p.getValue() == null) {
+                toBeRemoved.add(p);
+            }
 
+        }
+        boolean changed = false;
+        for (Property p : toBeRemoved) {
+            this.properties.remove(p);
+            changed = true;
+        }
+        return changed;
+    }
+
+    public boolean removeEmptyReferences() {
+        List<Reference> toBeRemoved = new ArrayList<Reference>();
+        for (Reference r : getReferences()) {
+            if (r.getReferencedElements().size() == 0) {
+                toBeRemoved.add(r);
+            }
+
+        }
+        boolean changed = false;
+        for (Reference r : toBeRemoved) {
+            this.references.remove(r);
+            changed = true;
+        }
+        return changed;
+    }
+
+    public boolean isSimilar(ManagedElement managedElement) {
+        if (getNamespace() != null && getNamespace().equalsIgnoreCase(managedElement.getNamespace()) && getName() != null
+                && getName().equalsIgnoreCase(managedElement.getName())) {
+            if (getProperties().size() != managedElement.getProperties().size()) {
+                return false;
+            }
+            for (Property p : getProperties()) {
+                if (managedElement.hasProperty(p.getName()) == false) {
+                    return false;
+                }
+                if (!managedElement.getProperty(p.getName()).equalsIgnoreCase(p.getValue())) {
+                    return false;
+                }
+            }
+            if (getReferences().size() != managedElement.getReferences().size()) {
+                return false;
+            }
+            for (Reference r : getReferences()) {
+                if (managedElement.hasReference(r.getName()) == false) {
+                    return false;
+                }
+                if (r.getReferencedElements().size() != managedElement.getReference(r.getName()).getReferencedElements().size()) {
+                    return false;
+                }
+                for (String ref : r.getReferencedElements()) {
+                    if (!managedElement.getReference(r.getName()).hasReferencedElement(ref)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
         return false;
-    } */
-    // TODO: update references
-
+    }
 
 }

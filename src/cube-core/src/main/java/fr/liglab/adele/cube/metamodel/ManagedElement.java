@@ -80,6 +80,13 @@ public interface ManagedElement {
     public List<Property> getProperties();
 
     /**
+     * Checks if the Managed Element has the given property.
+     * @param name Property name
+     * @return TRUE if it has the provided property.
+     */
+    boolean hasProperty(String name);
+
+    /**
      * Get Property value
      * @param name
      * @return NULL if 'name' is null or no property found with 'name' name; the value of the found property other else
@@ -117,6 +124,13 @@ public interface ManagedElement {
     public Reference getReference(String name) ;
 
     /**
+     * Checks if the Managed Element has the given reference.
+     * @param name Reference name
+     * @return TRUE if it has the provided reference name.
+     */
+    boolean hasReference(String name);
+
+    /**
      * Gets a textual description of the element.
      * @return
      */
@@ -130,4 +144,13 @@ public interface ManagedElement {
      * @throws InvalidNameException
      */
     public Reference addReference(String name, boolean onlyOne) throws InvalidNameException;
+
+    public boolean removeEmptyProperties();
+
+    public boolean removeEmptyReferences();
+
+    public boolean isSimilar(ManagedElement managedElement);
+
+
+
 }

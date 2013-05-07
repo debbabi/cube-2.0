@@ -94,6 +94,7 @@ public class ResolutionGraph {
 
     /**
      * Resolve the Constraints Graph.
+     * perform the objectives.
      * @return
      */
     public boolean resolve() {
@@ -118,6 +119,11 @@ public class ResolutionGraph {
         return true;
     }
 
+    /**
+     * Resolve the Constraints Graph.
+     * find a value for the root variable.
+     * @return
+     */
     public String find() {
         if (root != null) {
             //System.out.println("*********** findValue ************");
@@ -130,14 +136,19 @@ public class ResolutionGraph {
         return null;
     }
 
+    /**
+     * Resolve the Constraints Graph.
+     * create a new value for the root variable.
+     * @return
+     */
     public String create() {
         if (root != null) {
-            System.out.println("*********** create ************");
+            //System.out.println("*********** create ************");
             print();
-            System.out.println("*********************** variable: " +root.getTextualDescription());
+            //System.out.println("*********************** variable: " +root.getTextualDescription());
             String tmp = createUsingCharacteristics(root);
             if (evaluateValue(root) == true) {
-                System.out.println("*********************** value created: " +tmp );
+                //System.out.println("*********************** value created: " +tmp );
                 return tmp;
             }
         }
@@ -288,11 +299,11 @@ public class ResolutionGraph {
                 msg.setBody("createUsingCharacteristics");
                 msg.setAttachement(v);
                 try {
-                    System.out.println("sending..." + msg.toString());
-                    System.out.println(v.getTextualDescription());
+                    //System.out.println("sending..." + msg.toString());
+                    //System.out.println(v.getTextualDescription());
                     CMessage resultmsg = ((ResolverImpl)this.resolver).sendAndWait(msg);
                     if (resultmsg != null) {
-                        System.out.println("result..." + resultmsg.toString());
+                        //System.out.println("result..." + resultmsg.toString());
 
                         if (resultmsg.getBody() != null) {
                             this.agent.addExternalElement(resultmsg.getBody().toString(), resultmsg.getFrom());
@@ -530,11 +541,31 @@ public class ResolutionGraph {
                 //apply binary constraints
 
                 for (Constraint c : v.getBinaryConstraints()) {
+                    //System.out.println("######### 1");
                     if (c.getObjectVariable() != null && c.getObjectVariable().hasValue()) {
+                        //System.out.println("######### 2");
                         c.applyDescription(agent);
+                        //System.out.println("######### " + c.getObjectVariable().getValue());
                         c.getObjectVariable().removeValue();
+                        Object old = v.getValue();
                         String uuid = createUsingCharacteristics(v);
                         if (uuid != null) {
+                            ManagedElement m1 = agent.getRuntimeModelController().getLocalElement(uuid);
+                            //System.out.println("######### new value:" + m1.getTextualDescription());
+                            if (old != null && m1 != null) {
+                                ManagedElement m2 = agent.getRuntimeModelController().getLocalElement(old.toString());
+                                //System.out.println("######### old value:" + m2.getTextualDescription());
+                                if (m2 != null) {
+                                    m1.removeEmptyProperties();
+                                    m1.removeEmptyReferences();
+                                    m2.removeEmptyProperties();
+                                    m2.removeEmptyReferences();
+                                    if (agent.getRuntimeModelController().areSimilar(uuid, old.toString())) {
+                                        //System.out.println("######### old and new values similar!");
+                                        return null;
+                                    }
+                                }
+                            }
                             v.values.push(uuid);
                             return uuid;
                         }
@@ -609,9 +640,17 @@ public class ResolutionGraph {
         for (Constraint c : v.getConstraints()) {
             info("checking constraint: " + c.getName());
 
+            // check direct constraint
             if (c.check(agent) == false)  {
                 info("constraint '"+c.getName()+"' returns FALSE!");
                 return false;
+            }
+            // check referenced elements
+            if (c.isBinaryConstraint()) {
+                if (evaluateValue(c.getObjectVariable()) == false) {
+                    info("checking related value '"+c.getObjectVariable().getName()+"' of the variable '"+v.getName()+"' returns FALSe!");
+                    return false;
+                }
             }
             info("constraint '" + c.getName()+"' TRUE");
         }
@@ -630,18 +669,6 @@ public class ResolutionGraph {
             c.applyDescription(this.agent);
         }
     }
-
-    private void applyBinaryDescriptions(Variable v) {
-        //System.out.println("/////////////////////// apply Binary Descriptions: " + v.getName());
-        for (Constraint c : v.getBinaryConstraints()) {
-            //System.out.println("/////////////////////// binary constraint: " + c.getName());
-            c.applyDescription(this.agent);
-        }
-    }
-
-
-
-
 
     private void info(String msg) {
         if (this.agent.getConfig().isDebug() == true) {

@@ -37,5 +37,7 @@ public interface RuntimeModelController {
 
     public void receiveMessage(CMessage msg);
 
+    public boolean areSimilar(String instance_uuid1, String instance_uuid2);
+
     //List<String> getElements(String agentUri, String namespace, String name);
 }
