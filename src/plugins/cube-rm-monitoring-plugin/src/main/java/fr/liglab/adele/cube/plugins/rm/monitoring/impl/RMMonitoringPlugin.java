@@ -48,7 +48,7 @@ public class RMMonitoringPlugin extends AbstractPlugin {
 
         agent.getRuntimeModel().addListener(new RuntimeModelListener() {
             public void update(RuntimeModel rm, Notification notification) {
-                if (notification.getNotificationType() == RuntimeModelListener.NEW_UNCHECKED_INSTANCE) {
+                if (notification.getNotificationType() == RuntimeModelListener.UPDATED_RUNTIMEMODEL) {
                     /*
                     Object instance = notification.getNewValue();
                     if (instance != null && instance instanceof ManagedElement) {

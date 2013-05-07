@@ -86,10 +86,13 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
             if (constraintsGraph.resolve()) {
 
                 validateSolution(constraintsGraph);
+                // notify others about changes on the runtime model!
+                ((RuntimeModelImpl)agent.getRuntimeModel()).refresh();
 
             } else {
                 getCubeAgent().removeUnmanagedElements();
             }
+
         }
     }
 
@@ -106,8 +109,6 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
                 validateVariable(graph.getRoot());
             }
         }
-        //((RuntimeModelControllerImpl) ((RuntimeModelImpl) this.agent.getRuntimeModel()).getController()).validate(instance);
-        // TODO:
     }
 
     void validateVariable(Variable v) {
@@ -260,6 +261,7 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
 
                     Variable v = (Variable)msg.getAttachement();
                     validateVariable(v);
+                    ((RuntimeModelImpl)agent.getRuntimeModel()).refresh();
                 }
             }
         }

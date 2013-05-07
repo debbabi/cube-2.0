@@ -61,6 +61,11 @@ public class RuntimeModelImpl implements RuntimeModel {
         }
     }
 
+    void refresh() {
+        setChanged();
+        notifyListeners(new Notification(RuntimeModelListener.UPDATED_RUNTIMEMODEL, this));
+    }
+
     public List<ManagedElement> getManagedElements() {
         List<ManagedElement> result = new ArrayList<ManagedElement>();
         for (String key : this.elements.keySet()) {

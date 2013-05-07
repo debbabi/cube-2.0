@@ -28,12 +28,13 @@ import fr.liglab.adele.cube.agent.defaults.RuntimeModelImpl;
  */
 public interface RuntimeModelListener {
 
+
     int NEW_UNMANAGED_INSTANCE = 0;
     int NEW_UNCHECKED_INSTANCE = 1;
     int NEW_VALID_INSTANCE = 2;
     int REMOVED_UNCHECKED_INSTANCE = 3;
     int REMOVED_VALID_INSTANCE = 4;
-
+    int UPDATED_RUNTIMEMODEL = 5;
 
     public void update(RuntimeModel rm, Notification notification);
 }
