@@ -38,7 +38,6 @@ public class InAgent implements ConstraintResolver {
     }
 
     public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //System.out.println("...../...../........ inAgent.init");
         Object instance1_uuid = subjectVariable.getValue();
         if (instance1_uuid != null) {
             RuntimeModelController rmController = agent.getRuntimeModelController();
@@ -52,21 +51,17 @@ public class InAgent implements ConstraintResolver {
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //System.out.println("...../...../........ inAgent.check");
         Object instance1_uuid = subjectVariable.getValue();
         Object agentUri = objectVariable.getValue();
-        //System.out.println("...../...../........ inAgent.check: " + instance1_uuid + " - " + agentUri);
         if (instance1_uuid != null && agentUri != null) {
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
                 String value = rmController.getAgentOfElement(instance1_uuid.toString());
                 if (value != null && value.equalsIgnoreCase(agentUri.toString())) {
-                    //System.out.println("...../...../........ inAgent.check: TRUE");
                     return true;
                 }
             }
         }
-        //System.out.println("...../...../........ inAgent.check: FALSE");
         return false;
     }
 

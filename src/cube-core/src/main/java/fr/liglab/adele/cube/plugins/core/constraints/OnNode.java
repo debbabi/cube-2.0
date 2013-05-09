@@ -43,15 +43,11 @@ public class OnNode implements ConstraintResolver {
     }
 
     public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //System.out.println("OnNode.init.... " + subjectVariable.getValue() + " - " + objectVariable.getValue());
         Object instance1_uuid = subjectVariable.getValue();
         if (instance1_uuid != null) {
-            //System.out.println("1");
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                //System.out.println("2");
                 for (String s : rmController.getReferencedElements(instance1_uuid.toString(), Component.CORE_COMPONENT_NODE)) {
-                    //System.out.println("3");
                     objectVariable.setValue(s);
                     break;
                 }
@@ -60,17 +56,12 @@ public class OnNode implements ConstraintResolver {
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //System.out.println("OnNode.check : " + subjectVariable.getValue() + " - " + objectVariable.getValue());
         Object instance1_uuid = subjectVariable.getValue();
         Object instance2_uuid = objectVariable.getValue();
-        //System.out.println("1");
         if (instance1_uuid != null && instance2_uuid != null) {
-            //System.out.println("2");
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                //System.out.println("3");
                 if (rmController.hasReferencedElement(instance1_uuid.toString(), Component.CORE_COMPONENT_NODE, instance2_uuid.toString())) {
-                    //System.out.println("4");
                     //if (rmController.hasReferencedElement(instance2_uuid.toString(), Node.CORE_NODE_COMPONENTS, instance1_uuid.toString())) {
                         return true;
                     //}
@@ -91,30 +82,17 @@ public class OnNode implements ConstraintResolver {
      * @param objectVariable
      */
     public boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        System.out.println("OnNode.AppyDescription... ");
         if (subjectVariable != null && objectVariable != null && objectVariable.hasValue()) {
-            System.out.println("1 subject value " + subjectVariable.getValue());
-            System.out.println("1 subject" + subjectVariable.getTextualDescription());
-            System.out.println("1 object value " + objectVariable.getValue());
-            System.out.println("1 object" + objectVariable.getTextualDescription());
-            for (Object o : objectVariable.values){
-                System.out.println("- "+o);
-            }
             Reference ref = subjectVariable.getReference(Component.CORE_COMPONENT_NODE);
             if (ref == null) {
-                System.out.println("2");
                 try {
                     Reference r = subjectVariable.addReference(Component.CORE_COMPONENT_NODE, true);
                     if (r != null) {
-                        System.out.println("3");
                         r.addReferencedElement(objectVariable.getValue().toString());
 
                         String agent_uri = agent.getRuntimeModelController().getAgentOfElement(objectVariable.getValue().toString());
                         if (agent_uri != null)     {
-                            System.out.println("4 OK");
                             subjectVariable.setCubeAgent(agent_uri);
-                        //else
-                        //    System.out.println("OnNode.AppyDescription: no agent ::::::::::::::::::!!!!!!!!!!!!");
                             return true;
                         }
                     }
@@ -127,15 +105,11 @@ public class OnNode implements ConstraintResolver {
 
                 String agent_uri = agent.getRuntimeModelController().getAgentOfElement(objectVariable.getValue().toString());
                 if (agent_uri != null)     {
-                    System.out.println("4b OK");
                     subjectVariable.setCubeAgent(agent_uri);
-                    //else
-                    //    System.out.println("OnNode.AppyDescription: no agent ::::::::::::::::::!!!!!!!!!!!!");
                     return true;
                 }
             }
         }
-        System.out.println("5 FALSE");
         return false;
     }
 
@@ -202,14 +176,11 @@ public class OnNode implements ConstraintResolver {
      * @return
      */
     public String find(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //System.out.println("./././././././././././ onNode.find ");
         Object instance2_uuid = objectVariable.getValue();
 
         if (instance2_uuid != null) {
-            //System.out.println("./././././././././././ from node: " + instance2_uuid);
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                //System.out.println("./././././././././././ component description: " + subjectVariable.getTextualDescription());
                 List<String> sleaders = rmController.getReferencedElements(instance2_uuid.toString(), Node.CORE_NODE_COMPONENTS);
                 for (String s : sleaders) {
                     if (!subjectVariable.hasValue(s)) {
@@ -218,6 +189,6 @@ public class OnNode implements ConstraintResolver {
                 }
             }
         }
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 }

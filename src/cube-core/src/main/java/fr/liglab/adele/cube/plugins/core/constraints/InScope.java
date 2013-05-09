@@ -83,13 +83,6 @@ public class InScope implements ConstraintResolver {
      */
     public boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         if (subjectVariable != null && objectVariable != null && objectVariable.hasValue()) {
-            System.out.println("1 subject value " + subjectVariable.getValue());
-            System.out.println("1 subject" + subjectVariable.getTextualDescription());
-            System.out.println("1 object value " + objectVariable.getValue());
-            System.out.println("1 object" + objectVariable.getTextualDescription());
-            for (Object o : objectVariable.values){
-                System.out.println("- "+o);
-            }
             Reference ref = subjectVariable.getReference(Node.CORE_NODE_SCOPE);
             if (ref == null) {
                 try {
@@ -120,15 +113,12 @@ public class InScope implements ConstraintResolver {
     public boolean performObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         Object instance1_uuid = subjectVariable.getValue();
         Object instance2_uuid = objectVariable.getValue();
-        //System.out.println("!!!!!!!!!!!! perform inScope ");
         if (instance1_uuid != null && instance2_uuid != null) {
-            //System.out.println("!!!!!!!!!!!! perform inScope ...");
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
                 try {
                     if (rmController.addReferencedElement(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
                         if (rmController.addReferencedElement(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
-                            //System.out.println("!!!!!!!!!!!! perform inScope OK!");
                             return true;
                         }
                     }
@@ -173,14 +163,11 @@ public class InScope implements ConstraintResolver {
      * @return
      */
     public String find(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //System.out.println("./././././././././././ inScope.find ");
         Object instance2_uuid = objectVariable.getValue();
 
         if (instance2_uuid != null) {
-            //System.out.println("./././././././././././ from scope: " + instance2_uuid);
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                //System.out.println("./././././././././././ node description: " + subjectVariable.getTextualDescription());
                 List<String> sleaders = rmController.getReferencedElements(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES);
                 for (String s : sleaders) {
                     if (!subjectVariable.hasValue(s)) {
@@ -189,6 +176,6 @@ public class InScope implements ConstraintResolver {
                 }
             }
         }
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 }

@@ -51,16 +51,12 @@ public class HasNodeType implements ConstraintResolver {
         if (instance1_uuid != null && type != null) {
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                System.out.println("1");
                 String value = rmController.getPropertyValue(instance1_uuid.toString(), Node.CORE_NODE_TYPE);
-                System.out.println("2 " + value);
                 if (value != null && value.equalsIgnoreCase(type.toString())) {
-                    System.out.println("3 TRUE");
                     return true;
                 }
             }
         }
-        System.out.println("4 FALSE");
         return false;
     }
 

@@ -43,33 +43,12 @@ public class OnSameNodeAs implements ConstraintResolver {
     }
 
     public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        /*
-        Object instance1_uuid = subjectVariable.getValue();
-        if (instance1_uuid != null) {
-            RuntimeModelController rmController = agent.getRuntimeModelController();
-            if (rmController != null) {
-                if (objectVariable != null && objectVariable.getValue() != null) {
-                    for (String s : rmController.getReferencedElements(instance1_uuid.toString(), Component.CORE_COMPONENT_NODE)) {
-                        try {
-                            rmController.addReferencedElement(objectVariable.getValue().toString(), Component.CORE_COMPONENT_NODE, true, s);
-                        } catch (InvalidNameException e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        */
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //System.out.println("OnNode.check : " + subjectVariable.getValue() + " - " + objectVariable.getValue());
         Object instance1_uuid = subjectVariable.getValue();
         Object instance2_uuid = objectVariable.getValue();
-        //System.out.println("1");
         if (instance1_uuid != null && instance2_uuid != null) {
-            //System.out.println("2");
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
                 for (String n1 : rmController.getReferencedElements(instance1_uuid.toString(), Component.CORE_COMPONENT_NODE)) {
@@ -81,7 +60,6 @@ public class OnSameNodeAs implements ConstraintResolver {
                 }
             }
         }
-        //System.out.println("5");
         return false;
     }
 

@@ -47,19 +47,14 @@ public class HasAtMaxInputComponents implements ConstraintResolver {
         Object atMaxInputComponents = objectVariable.getValue();
 
         if (instance1_uuid != null && atMaxInputComponents != null) {
-            //System.out.println("has max input components . check: "+ instance1_uuid + " (" +atMaxInputComponents+")");
             Integer i = Integer.valueOf(atMaxInputComponents.toString());
             if (i != null) {
-                //System.out.println("1");
                 RuntimeModelController rmController = agent.getRuntimeModelController();
                 if (rmController != null) {
-                    //System.out.println("1");
                     List<String> inputs = rmController.getReferencedElements(instance1_uuid.toString(), Component.CORE_COMPONENT_INPUTS);
 
                     if (inputs != null) {
-                        //System.out.println("2");
                         if (inputs.size() <= i.intValue()) {
-                            //System.out.println("3");
                             return true;
                         }
                     }

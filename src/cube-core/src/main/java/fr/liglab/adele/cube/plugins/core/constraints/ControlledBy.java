@@ -42,18 +42,12 @@ public class ControlledBy implements ConstraintResolver {
     }
 
     public void init(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //System.out.println("init using controlledby... ");
         Object instance1_uuid = subjectVariable.getValue();
         if (instance1_uuid != null) {
-            //System.out.println("init using controlledby... not null subject");
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                //System.out.println("init using controlledby... subject_uuid:" + instance1_uuid);
-                //System.out.println("init using controlledby... prop:" + Scope.CORE_SCOPE_MASTER);
                 List<String> tmp = rmController.getReferencedElements(instance1_uuid.toString(), Scope.CORE_SCOPE_MASTER);
-                //System.out.println("init using controlledby... references:" + tmp.size());
                 for (String s : rmController.getReferencedElements(instance1_uuid.toString(), Scope.CORE_SCOPE_MASTER)) {
-                    //System.out.println("init using controlledby... OK " + s);
                     objectVariable.setValue(s);
                 }
             }
@@ -61,24 +55,14 @@ public class ControlledBy implements ConstraintResolver {
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //System.out.println("-1");
         Object instance1_uuid = subjectVariable.getValue();
         Object instance2_uuid = objectVariable.getValue();
-        //if (instance1_uuid == null) System.out.println("subject NULL");
-        //if (instance2_uuid == null) System.out.println("object NULL");
         if (instance1_uuid != null && instance2_uuid != null) {
             RuntimeModelController rmController = agent.getRuntimeModelController();
-            //System.out.println("0");
             if (rmController != null) {
-                //System.out.println("1");
                 if (rmController.hasReferencedElement(instance1_uuid.toString(),
-                        Scope.CORE_SCOPE_MASTER,
-                        instance2_uuid.toString())) {
-                    //System.out.println("2");
-                    /*
-                    if (rmController.hasReferencedElement(instance2_uuid.toString(), Master.CORE_MASTER_SCOPE_LEADERS, instance1_uuid.toString())) {
-                        return true;
-                    }   */
+                    Scope.CORE_SCOPE_MASTER,
+                    instance2_uuid.toString())) {
                     return true;
                 }
             }
@@ -97,13 +81,7 @@ public class ControlledBy implements ConstraintResolver {
      */
     public boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         if (subjectVariable != null && objectVariable != null && objectVariable.getValue() != null) {
-            System.out.println("1 subject value " + subjectVariable.getValue());
-            System.out.println("1 subject" + subjectVariable.getTextualDescription());
-            System.out.println("1 object value " + objectVariable.getValue());
-            System.out.println("1 object" + objectVariable.getTextualDescription());
-            for (Object o : objectVariable.values){
-                System.out.println("- "+o);
-            }
+
             Reference ref = subjectVariable.getReference(Scope.CORE_SCOPE_MASTER);
             if (ref == null) {
                 try {
@@ -186,19 +164,14 @@ public class ControlledBy implements ConstraintResolver {
      * @return
      */
     public String find(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
-        //System.out.println("./././././././././././ ControlledBy.find ");
         Object instance2_uuid = objectVariable.getValue();
 
         if (instance2_uuid != null) {
-            //System.out.println("./././././././././././ from master: " + instance2_uuid);
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                //System.out.println("./././././././././././ scope description: " + subjectVariable.getTextualDescription());
                 List<String> sleaders = rmController.getReferencedElements(instance2_uuid.toString(), subjectVariable.getProperty(Scope.CORE_SCOPE_ID));
                 for (String s : sleaders) {
-                    //System.out.println("controlledBy.find: "+s);
                     if (!subjectVariable.hasValue(s)) {
-                        //System.out.println("controlledBy.find: "+s + " OK!");
                         return s;
                     }
                 }
