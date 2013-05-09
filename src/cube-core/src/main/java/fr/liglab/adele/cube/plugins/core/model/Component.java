@@ -39,11 +39,11 @@ public class Component extends AbstractManagedElement {
 
     public static final String NAME = "Component";
 
-    public static final String CORE_COMPONENT_ID = "core.component.id";
-    public static final String CORE_COMPONENT_TYPE = "core.component.type";
-    public static final String CORE_COMPONENT_NODE = "core.component.node";
-    public static final String CORE_COMPONENT_INPUTS = "core.component.inputs";
-    public static final String CORE_COMPONENT_OUTPUTS = "core.component.outputs";
+    public static final String CORE_COMPONENT_ID = "id";
+    public static final String CORE_COMPONENT_TYPE = "type";
+    public static final String CORE_COMPONENT_NODE = "node";
+    public static final String CORE_COMPONENT_INPUTS = "inputs";
+    public static final String CORE_COMPONENT_OUTPUTS = "outputs";
 
     public Component(CubeAgent agent) {
         super(agent);

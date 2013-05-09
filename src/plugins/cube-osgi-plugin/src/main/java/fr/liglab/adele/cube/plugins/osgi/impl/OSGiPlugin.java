@@ -62,6 +62,7 @@ public class OSGiPlugin extends AbstractPlugin {
                 ((Node)me).setNodeId(node_id);
                 ((Node)me).setNodeType(node_type);
                 getCubeAgent().getRuntimeModel().add(me);
+                getCubeAgent().getRuntimeModel().refresh();
             }
         } catch (InvalidNameException e) {
             e.printStackTrace();

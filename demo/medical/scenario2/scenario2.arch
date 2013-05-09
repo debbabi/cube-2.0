@@ -1,0 +1,51 @@
+<cube xmlns:core="fr.liglab.adele.cube.core">
+  <archetype id="net.debbabi.cube.medical" 
+			 description="Scenario 0" 
+			 version="2.0">
+
+		<goals>
+			<goal description="dynamic scopes management">
+				<core:inScope s="@aggr_server" o="@orange_infra" r="fc"/>
+				<core:inScope s="@med_server" o="@orange_infra" r="fc"/>		
+				<core:controlledBy s="@orange_infra" o="@master" r="f"/>			
+			</goal>
+			<goal description="initial components creation">
+				<core:hasComponent s="@aggr_server" o="@aggr_ws" r="fc"/>
+			</goal>
+			<goal description="self-growing">
+				<core:connected s="@aggr_ws" o="@loadbalancing_outadapter" r="fc"/>
+			</goal>
+		</goals>
+
+
+		<elements>
+			<core:Master id="master">
+				<core:inAgent o="cube://localhost:38000"/>
+			</core:Master>
+
+			<core:Scope id="orange_infra">
+				<core:hasScopeId o="OrangeInfrastructure"/>
+				<core:controlledBy o="@master"/>
+			</core:Scope>
+
+			<core:Node id="aggr_server">
+				<core:hasNodeType o="AggregationServer"/>
+			</core:Node>
+
+			<core:Node id="med_server">
+				<core:hasNodeType o="MediationServer"/>
+			</core:Node>
+
+			<core:Component id="aggr_ws">
+				<core:hasComponentType o="AggrWS"/>
+			</core:Component>
+
+			<core:Component id="loadbalancing_outadapter">
+				<core:hasComponentType o="LBAdapter"/>
+				<!--core:onSameNodeAs o="@aggr_ws"/-->
+			</core:Component>
+
+		</elements>
+
+  </archetype>
+</cube>

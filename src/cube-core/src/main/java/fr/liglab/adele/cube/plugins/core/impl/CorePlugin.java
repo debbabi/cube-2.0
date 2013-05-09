@@ -56,6 +56,7 @@ public class CorePlugin extends AbstractPlugin {
                     if (me != null) {
                         // m.setMasterURI(getCubeAgent().getUri());
                         getCubeAgent().getRuntimeModel().add(me);
+                        getCubeAgent().getRuntimeModel().refresh();
                     }
                 } catch (InvalidNameException e) {
                     e.printStackTrace();
@@ -125,40 +126,52 @@ public class CorePlugin extends AbstractPlugin {
 
     public ConstraintResolver getConstraintResolver(String name) {
         if (name != null) {
-            if (name.equalsIgnoreCase("connected")) {
-                return Connected.instance();
+            // general
+            if (name.equalsIgnoreCase("hasProperty")) {
+                return HasProperty.instance();
             }
+            if (name.equalsIgnoreCase("inAgent")) {
+                return InAgent.instance();
+            }
+
+            // scopes
             if (name.equalsIgnoreCase("controlledBy")) {
                 return ControlledBy.instance();
             }
             if (name.equalsIgnoreCase("hasScopeId")) {
                 return HasScopeId.instance();
             }
-            if (name.equalsIgnoreCase("hasNodeType")) {
-                return HasNodeType.instance();
-            }
-            if (name.equalsIgnoreCase("hasComponentType")) {
-                return HasComponentType.instance();
-            }
-            if (name.equalsIgnoreCase("inAgent")) {
-                return InAgent.instance();
-            }
+
+            // nodes
             if (name.equalsIgnoreCase("inScope")) {
                 return InScope.instance();
+            }
+            if (name.equalsIgnoreCase("HasSourceComponent")) {
+                return HasSourceComponent.instance();
+            }
+            if (name.equalsIgnoreCase("hasNodeType")) {
+                return HasNodeType.instance();
             }
             if (name.equalsIgnoreCase("onNode")) {
                 return OnNode.instance();
             }
+            if (name.equalsIgnoreCase("hasComponent")) {
+                return HasComponent.instance();
+            }
+
+            // components
+            if (name.equalsIgnoreCase("connected")) {
+                return Connected.instance();
+            }
+            if (name.equalsIgnoreCase("hasComponentType")) {
+                return HasComponentType.instance();
+            }
             if (name.equalsIgnoreCase("hasAtMaxInputComponents")) {
                 return HasAtMaxInputComponents.instance();
             }
-            if (name.equalsIgnoreCase("hasProperty")) {
-                return HasProperty.instance();
+            if (name.equalsIgnoreCase("onSameNodeAs")) {
+                return OnSameNodeAs.instance();
             }
-            if (name.equalsIgnoreCase("controlledBy")) {
-                return ControlledBy.instance();
-            }
-
 
         }
         return null;

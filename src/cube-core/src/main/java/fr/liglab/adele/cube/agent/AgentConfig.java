@@ -31,8 +31,11 @@ public class AgentConfig {
     public static final String DEFAULT_HOST = "localhost";
     public static final long DEFAULT_PORT = 38000;
     public static final long DEFAULT_PULSE = 3000;
+    private static final long DEFAULT_KAINTERVAL = 5000;
+    private static final long DEFAULT_KARETRY = 1;
     public static final String DEFAULT_RESOLVER = "default-resolver";
     public static final String DEFAULT_COMMUNICATOR = "socket-communicator";
+
 
     private String host = DEFAULT_HOST;
     private long port = DEFAULT_PORT;
@@ -46,6 +49,8 @@ public class AgentConfig {
     private boolean persist = false;
 
     private List<PluginConfig> extensions = new ArrayList<PluginConfig>();
+    private long keepAliveInterval = DEFAULT_KAINTERVAL;
+    private long keepAliveRetry = DEFAULT_KARETRY;
 
     public AgentConfig() {
 
@@ -98,7 +103,7 @@ public class AgentConfig {
         this.port = port;
     }
 
-    public void setPulse(long pulse) {
+    public void setRmCheckInterval(long pulse) {
         this.pulse = pulse;
     }
 
@@ -132,5 +137,21 @@ public class AgentConfig {
 
     public void setPerf(boolean booleanValue) {
         this.perf = booleanValue;
+    }
+
+    public void setKeepAliveInterval(long keepAliveInterval) {
+        this.keepAliveInterval = keepAliveInterval;
+    }
+
+    public void setKeepAliveRetry(long keepAliveRetry) {
+        this.keepAliveRetry = keepAliveRetry;
+    }
+
+    public long getKeepAliveInterval() {
+        return keepAliveInterval;
+    }
+
+    public long getKeepAliveRetry() {
+        return keepAliveRetry;
     }
 }

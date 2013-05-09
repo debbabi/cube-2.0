@@ -163,6 +163,7 @@ public class CubeConsole {
                 if (me != null) {
                     agent.getRuntimeModel().add(me);
                     msg += "\n... instance created: " + me.getUri();
+                    agent.getRuntimeModel().refresh();
                 }
             } else {
                 msg += "\n... error!";
@@ -202,7 +203,7 @@ public class CubeConsole {
                 String[] tmp = properties.split(",");
                 if (tmp != null && tmp.length > 0) {
                     for (int i =0; i<tmp.length; i++) {
-                        String[] prop = tmp[i].split(":");
+                        String[] prop = tmp[i].split("=");
                         if (prop != null && prop.length == 2) {
                             p.put(prop[0], prop[1]);
                         }
@@ -221,6 +222,7 @@ public class CubeConsole {
                 if (me != null) {
                     agent.getRuntimeModel().add(me);
                     msg += "\n... instance created: " + me.getUri();
+                    agent.getRuntimeModel().refresh();
                 }
             } else {
                 msg += "\n... error!";
@@ -241,12 +243,13 @@ public class CubeConsole {
         if (agent == null) {
             System.out.println("Agent '"+aid+"' does not exist! Type 'cube:agents' to see the list of existing Cube Agents in this platform.");
         } else {
+
             String msg = "--------------------------------------------------------------------------";
 
             for (Plugin p : agent.getPlugins()) {
                 String ns = p.getPluginFactory().getNamespace();
                 String n = p.getPluginFactory().getName();
-                System.out.println(ns + ":" + n);
+                msg += ("\n" +ns + ":" + n);
             }
 
             msg += "\n--------------------------------------------------------------------------";

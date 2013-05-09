@@ -1,0 +1,41 @@
+<cube xmlns:core="fr.liglab.adele.cube.core">
+  <archetype id="net.debbabi.cube.demo" 
+			 description="Tutorial 3" 
+			 version="2.0">
+
+	<goals>
+		<goal description="dynamic scopes management">
+			<core:inScope s="@pc" o="@s" r="fc"/>
+			<core:inScope s="@gateway" o="@s" r="fc"/>
+			<core:controlledBy s="@s" o="@m" r="f"/>
+		</goal>
+		<goal description="components placement">
+			<core:onNode s="@b" o="@pc" r="f"/>
+		</goal>
+		<goal description="self-connecting components">
+			<core:connected s="@a" o="@b" r="fc"/>	   	
+		</goal>
+	</goals>
+
+	<elements>
+		<core:Component id="a">
+			<core:hasComponentType o="A"/>
+		</core:Component>
+		<core:Component id="b">
+			<core:hasComponentType o="B"/>							
+		</core:Component>		
+		<core:Node id="pc">
+			<core:hasNodeType o="PC"/>			
+		</core:Node>	
+		<core:Node id="gateway">
+			<core:hasNodeType o="GATEWAY"/>			
+		</core:Node>	
+		<core:Scope id="s">
+			<core:hasScopeId o="LAN"/>			
+		</core:Scope>
+		<core:Master id="m">
+			<core:inAgent o="cube://localhost:38001"/>
+		</core:Master>
+	</elements>
+  </archetype>
+</cube>

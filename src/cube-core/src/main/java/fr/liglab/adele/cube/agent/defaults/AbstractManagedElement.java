@@ -295,7 +295,7 @@ public abstract class AbstractManagedElement extends Observable implements Manag
     public Reference addReference(String name, boolean onlyOne) throws InvalidNameException {
         Reference r = getReference(name);
         if (getReference(name) == null) {
-            r = new Reference(name, false);
+            r = new Reference(name, onlyOne);
             this.references.add(r);
         }
         return r;
@@ -325,6 +325,55 @@ public abstract class AbstractManagedElement extends Observable implements Manag
             }
         }
         return msg;
+    }
+
+    public String getHTMLDescription() {
+        String msg = "<html>";
+        msg += "<br/> <b>" + this.getUri() + "</b><br/><hr/>";
+        if (this.getProperties().size() > 0) {
+            msg += "<p><b>PROPERTIES</b><br/><ul>";
+            for (Property p : this.getProperties()) {
+                msg += "<li> " + p.getName() + "=" + p.getValue() + "</li>";
+            }
+            msg += "</ul></p>";
+        }
+        if (this.getReferences().size() > 0) {
+            msg += "<p><b>REFERENCES</b><ul>";
+            for (Reference r : this.getReferences()) {
+                msg += "<li>" + r.getName() + ":<br/>";
+                msg += "<ul>";
+                for (String s : r.getReferencedElements()) {
+                    msg += "<li>" + s + "</li>";
+                }
+                msg += "</ul>";
+                msg += "</li>";
+            }
+            msg += "</ul></p>";
+        }
+        return msg + "</html>";
+    }
+
+    public synchronized  boolean removeReferencedElement(String ref) {
+        boolean changed = false;
+        if (ref != null) {
+            List<Reference> toBeRemoved = new ArrayList<Reference>();
+            for (Reference r : this.references) {
+                if (r.removeReferencedElement(ref) == true) {
+                    changed = true;
+                    if (r.getReferencedElements().size() == 0) {
+                        toBeRemoved.add(r);
+                    }
+                }
+            }
+            for (Reference r : toBeRemoved) {
+                this.references.remove(r);
+            }
+            if (changed) {
+                if (getState() == VALID)
+                    updateState(ManagedElement.UNCHECKED);
+            }
+        }
+        return changed;
     }
 
     public synchronized boolean removeEmptyProperties() {

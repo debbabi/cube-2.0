@@ -2,7 +2,7 @@
 
 
 
-newi 1 component core.component.type:A
+newi 1 component core.component.type:AggrWS
 
 
 

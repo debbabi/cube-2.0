@@ -48,7 +48,9 @@ public class AgentConfigParser {
 	private static final String AGENT = "agent";
 	private static final String HOST = "host";
 	private static final String PORT = "port";
-    private static final String PULSE = "pulse";
+    private static final String RMCHECKINTERVAL = "rmcheck-interval";
+    private static final String KAINTERVAL = "keepalive-interval";
+    private static final String KARETRY = "keepalive-retry";
 	private static final String DEBUG = "debug";
 	private static final String PERSIST = "persist";
 	private static final String PERF = "perf";
@@ -157,8 +159,13 @@ public class AgentConfigParser {
 								cac.setHost(cconfig.getAttribute(VALUE));								
 							} else if (cconfig.getName().equalsIgnoreCase(PORT)) {
 								cac.setPort(new Long(cconfig.getAttribute(VALUE)).longValue());
-							} else if (cconfig.getName().equalsIgnoreCase(PULSE)) {
-                                cac.setPulse(new Long(cconfig.getAttribute(VALUE)).longValue());
+
+							} else if (cconfig.getName().equalsIgnoreCase(RMCHECKINTERVAL)) {
+                                cac.setRmCheckInterval(new Long(cconfig.getAttribute(VALUE)).longValue());
+                            } else if (cconfig.getName().equalsIgnoreCase(KAINTERVAL)) {
+                                cac.setKeepAliveInterval(new Long(cconfig.getAttribute(VALUE)).longValue());
+                            } else if (cconfig.getName().equalsIgnoreCase(KARETRY)) {
+                                cac.setKeepAliveRetry(new Long(cconfig.getAttribute(VALUE)).longValue());
                             } else if (cconfig.getName().equalsIgnoreCase(RESOLVER)) {
 								cac.setResolverName(cconfig.getAttribute(VALUE));
 							} else if (cconfig.getName().equalsIgnoreCase(COMMUNICATOR)) {

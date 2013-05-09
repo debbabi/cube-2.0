@@ -103,6 +103,10 @@ public class CubeAgentImpl implements CubeAgent {
      */
     private String localId = "0";
 
+    /**
+     * key: uuid
+     * value: agent_uri
+     */
     private Map<String , String> externalElements = new HashMap<String, String>();
 
     private static int index = 1;
@@ -151,11 +155,23 @@ public class CubeAgentImpl implements CubeAgent {
                 this.communicator.addMessagesListener(this.getUri(), new MessagesListener() {
                     public void receiveMessage(CMessage msg) {
                         if (msg != null) {
-                            if (msg.getObject() != null && msg.getObject().equalsIgnoreCase("resolution")) {
-                                CubeAgentImpl.this.resolver.receiveMessage(msg);
-                            } else if (msg.getObject() != null && msg.getObject().equalsIgnoreCase("runtimemodel")) {
-                                CubeAgentImpl.this.rmController.receiveMessage(msg);
+
+                            //System.out.println("received: " + msg.toString());
+
+                            if (msg.getObject() != null) {
+                                if (msg.getObject().equalsIgnoreCase("resolution")) {
+
+
+
+                                    CubeAgentImpl.this.resolver.receiveMessage(msg);
+                                } else if (msg.getObject().equalsIgnoreCase("runtimemodel")) {
+                                    CubeAgentImpl.this.rmController.receiveMessage(msg);
+                                } else if (msg.getObject().equalsIgnoreCase("keepalive")) {
+                                    CubeAgentImpl.this.lifeController.keepAliveReceived(msg.getFrom());
+                                }
                             }
+                        } else {
+                            System.out.println("received NULL msg!");
                         }
                     }
                 });
@@ -166,7 +182,7 @@ public class CubeAgentImpl implements CubeAgent {
         }
 
 
-            // Unmanaged elements
+        // Unmanaged elements
         this.unmanagedElements = new HashMap<String, ManagedElement>();
 
         // Runtime Model
@@ -180,6 +196,9 @@ public class CubeAgentImpl implements CubeAgent {
 
         // resolver
         this.resolver = new ResolverImpl(this);
+
+        // runtime model checker
+        this.checker = new RuntimeModelChecker(this);
 
         // plugins
         this.plugins = new ArrayList<Plugin>();
@@ -198,8 +217,6 @@ public class CubeAgentImpl implements CubeAgent {
             }
         }
 
-        // runtime model checker
-        this.checker = new RuntimeModelChecker(this);
     }
 
     public String getUri() {
@@ -315,12 +332,25 @@ public class CubeAgentImpl implements CubeAgent {
         return this.rmController;
     }
 
-    public void addExternalElement(String element_uuid, String agent_uri) {
+    public synchronized void addExternalElement(String element_uuid, String agent_uri) {
         this.externalElements.put(element_uuid, agent_uri);
     }
 
-    public String getExternalAgentUri(String managed_element_uuid) {
+    public synchronized String getExternalAgentUri(String managed_element_uuid) {
         return this.externalElements.get(managed_element_uuid);
+    }
+
+    synchronized void removeExternalAgentElements(String agent_uri) {
+        List<String> toBeRemoved = new ArrayList<String>();
+        if (this.externalElements.containsValue(agent_uri)) {
+            for (String uuid : this.externalElements.keySet()) {
+                String agent = this.externalElements.get(uuid);
+                if (agent != null && agent.equalsIgnoreCase(agent_uri)) {
+                    toBeRemoved.add(uuid);
+                }
+            }
+        }
+        ((RuntimeModelImpl)this.getRuntimeModel()).removeReferences(toBeRemoved);
     }
 
     /**
@@ -340,7 +370,7 @@ public class CubeAgentImpl implements CubeAgent {
             }
         }
         if (this.lifeController != null)
-            this.lifeController.run();
+            this.lifeController.start();
         for (Plugin ex: this.getPlugins()) {
             ex.run();
         }

@@ -25,7 +25,6 @@ import fr.liglab.adele.cube.agent.defaults.resolver.Variable;
 import fr.liglab.adele.cube.metamodel.InvalidNameException;
 
 import fr.liglab.adele.cube.metamodel.Reference;
-import fr.liglab.adele.cube.plugins.core.model.Component;
 import fr.liglab.adele.cube.plugins.core.model.Node;
 import fr.liglab.adele.cube.plugins.core.model.Scope;
 
@@ -63,8 +62,8 @@ public class InScope implements ConstraintResolver {
         if (instance1_uuid != null && instance2_uuid != null) {
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                if (rmController.hasReferencedElements(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
-                    //if (rmController.hasReferencedElements(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
+                if (rmController.hasReferencedElement(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
+                    //if (rmController.hasReferencedElement(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
                         return true;
                     //}
                 }
@@ -84,7 +83,13 @@ public class InScope implements ConstraintResolver {
      */
     public boolean applyDescription(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
         if (subjectVariable != null && objectVariable != null && objectVariable.hasValue()) {
-
+            System.out.println("1 subject value " + subjectVariable.getValue());
+            System.out.println("1 subject" + subjectVariable.getTextualDescription());
+            System.out.println("1 object value " + objectVariable.getValue());
+            System.out.println("1 object" + objectVariable.getTextualDescription());
+            for (Object o : objectVariable.values){
+                System.out.println("- "+o);
+            }
             Reference ref = subjectVariable.getReference(Node.CORE_NODE_SCOPE);
             if (ref == null) {
                 try {
@@ -121,8 +126,8 @@ public class InScope implements ConstraintResolver {
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
                 try {
-                    if (rmController.addReference(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
-                        if (rmController.addReference(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
+                    if (rmController.addReferencedElement(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
+                        if (rmController.addReferencedElement(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
                             //System.out.println("!!!!!!!!!!!! perform inScope OK!");
                             return true;
                         }
@@ -150,8 +155,8 @@ public class InScope implements ConstraintResolver {
         if (instance1_uuid != null && instance2_uuid != null) {
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                if (rmController.removeReference(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
-                    if (rmController.removeReference(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
+                if (rmController.removeReferencedElement(instance1_uuid.toString(), Node.CORE_NODE_SCOPE, instance2_uuid.toString())) {
+                    if (rmController.removeReferencedElement(instance2_uuid.toString(), Scope.CORE_SCOPE_NODES, instance1_uuid.toString())) {
                         return true;
                     }
                 }

@@ -51,7 +51,7 @@ public class XMLParser implements ContentHandler, ErrorHandler {
     /**
      * Characters.
      * @param ch : character
-     * @param start : run
+     * @param start : start
      * @param length : length
      * @throws org.xml.sax.SAXException : can never occurs.
      * @see org.xml.sax.ContentHandler#characters(char[], int, int)
@@ -109,7 +109,7 @@ public class XMLParser implements ContentHandler, ErrorHandler {
     /**
      * Ignore whitespace.
      * @param ch : character
-     * @param start : run
+     * @param start : start
      * @param length : length
      * @throws org.xml.sax.SAXException : can never occurs.
      * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)

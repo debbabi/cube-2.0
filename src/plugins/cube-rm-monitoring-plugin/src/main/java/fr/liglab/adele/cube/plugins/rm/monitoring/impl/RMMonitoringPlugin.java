@@ -62,7 +62,7 @@ public class RMMonitoringPlugin extends AbstractPlugin {
     }
 
     public void run() {
-        System.out.println("---------------- RM Monitoring Plugin -----------------");
+        //System.out.println("---------------- RM Monitoring Plugin -----------------");
         gui.setVisible(true);
     }
 

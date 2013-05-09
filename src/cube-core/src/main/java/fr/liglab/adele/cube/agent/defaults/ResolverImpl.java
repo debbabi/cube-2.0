@@ -51,10 +51,17 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
 
     public void update(RuntimeModel rm, Notification notification) {
         switch (notification.getNotificationType()) {
+            /*
             case RuntimeModelListener.NEW_UNCHECKED_INSTANCE: {
                 Object instance = notification.getNewValue();
                 if (instance != null && instance instanceof ManagedElement) {
                     resolveUncheckedInstance((ManagedElement) instance);
+                }
+            } break;
+            */
+            case RuntimeModelListener.UPDATED_RUNTIMEMODEL: {
+                for (ManagedElement me : agent.getRuntimeModel().getManagedElements(ManagedElement.UNCHECKED)) {
+                    resolveUncheckedInstance(me);
                 }
             } break;
         }
@@ -63,6 +70,7 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
     void resolveUncheckedInstance(ManagedElement instance) {
 
         if (instance != null && instance.getState() == ManagedElement.UNCHECKED) {
+            info("resolving UNCHECKED element '"+instance.getUri()+"'...");
             /*
              * Create the root variable that contains the newly created instance (to be resolved).
              */
@@ -85,11 +93,14 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
             info("");
             if (constraintsGraph.resolve()) {
 
-                validateSolution(constraintsGraph);
+                if (validateSolution(constraintsGraph)) {
+                    agent.getRuntimeModel().refresh();
+                }
                 // notify others about changes on the runtime model!
-                ((RuntimeModelImpl)agent.getRuntimeModel()).refresh();
+                //((RuntimeModelImpl)agent.getRuntimeModel()).refresh();
 
             } else {
+
                 getCubeAgent().removeUnmanagedElements();
             }
 
@@ -100,18 +111,20 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
      * Validate the found solution.
      * @param graph
      */
-    void validateSolution(ResolutionGraph graph) {
+    boolean validateSolution(ResolutionGraph graph) {
         info("");
         info("validating solution..");
         info("\n");
         if (graph != null) {
             if (graph.getRoot() != null) {
-                validateVariable(graph.getRoot());
+                return validateVariable(graph.getRoot());
             }
         }
+        return false;
     }
 
-    void validateVariable(Variable v) {
+    boolean validateVariable(Variable v) {
+        boolean changed = false;
         if (v.getValue() != null) {
             //
             if (!v.isPrimitive()) {
@@ -131,14 +144,16 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
                         } else if (me.getState() == ManagedElement.UNMANAGED) {
                             agent.getRuntimeModel().add(me);
                         }
+                        changed = true;
                     }
                 }
                 else {
                     //info("... remote createValue");
 
-
                     CMessage msg = new CMessage();
                     msg.setTo(agenturi);
+                    msg.setFrom(agent.getUri());
+                    msg.setReplyTo(agent.getUri());
                     msg.setObject("resolution");
                     msg.setBody("validateVariable");
                     msg.setAttachement(v);
@@ -154,6 +169,7 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
                 }
             }
         }
+        return changed;
     }
 
     /**
@@ -231,7 +247,9 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
 
                     String result = constraintsGraph.create();
                     if (result == null) {
-                        getCubeAgent().removeUnmanagedElements();
+                        //getCubeAgent().removeUnmanagedElements();
+                    } else {
+                        //
                     }
 
                     //String result = constraintsGraph.findUsingCharacteristics(v);
@@ -261,7 +279,7 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
 
                     Variable v = (Variable)msg.getAttachement();
                     validateVariable(v);
-                    ((RuntimeModelImpl)agent.getRuntimeModel()).refresh();
+                    agent.getRuntimeModel().refresh();
                 }
             }
         }

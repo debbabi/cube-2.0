@@ -63,7 +63,10 @@ public class Reference implements Serializable {
     }
 
     /**
-     * Add Referenced Element
+     * Add Referenced Element.
+     * If the reference has at max one referenced element (onlyone attribut is set to true), the existing referenced
+     * elements will be removed, and the new one identified by 'elementUUID' will be added.
+     *
      * @param elementUUID
      * @return FALSE if 'elementUUID' is null or the element already referenced; TRUE if added properly.
      */

@@ -75,19 +75,37 @@ public class ResolutionGraph {
      */
     private Variable root;
 
+    /**
+     * The resolver that creates this resolution graph.
+     */
     private Resolver resolver;
+
+    /**
+     * The Cube Agent where this resolution graph will be executed.
+     */
     private CubeAgent agent;
 
-
+    /**
+     * Constructor.
+      * @param resolver
+     */
     public ResolutionGraph(Resolver resolver) {
         this.resolver = resolver;
         this.agent = resolver.getCubeAgent();
     }
 
+    /**
+     * Sets the Root Variable of the current resolution graph.
+     * @param var
+     */
     public void setRoot(Variable var) {
         this.root = var;
     }
 
+    /**
+     * Sets the Root Variable of the current resolution graph.
+     * @return
+     */
     public Variable getRoot() {
         return this.root;
     }
@@ -98,10 +116,7 @@ public class ResolutionGraph {
      * @return
      */
     public boolean resolve() {
-        //System.out.println("************** resolve ****************");
         if (root != null) {
-
-            // createValue the resolution graph from the archetype.
             preProcessing();
             print();
             // For each objective constraint related to the root variable,
@@ -117,6 +132,140 @@ public class ResolutionGraph {
             }
         }
         return true;
+    }
+
+    /**
+     * Find Objective constraints to be applied to the current root variable instance.
+     */
+    private void preProcessing() {
+        info("pre processing...");
+        Archetype archetype = this.agent.getArchetype();
+        if (archetype != null) {
+
+            // findValue all objectives for this element
+            for (Objective obj : archetype.getObjectives()) {
+                info("checking objective " + obj.getName());
+                /*
+                 * if the subject of the objective constraint has the same metamodel as the root variable
+                 */
+                if (obj.getSubject().getName().equalsIgnoreCase(root.getName()) &&
+                        obj.getNamespace().equalsIgnoreCase(root.getNamespace())) {
+                    //info("ok the same element type! but... ");
+                    // we check if all the descriptions in the archetype for this subject variable are met for the
+                    // current instance
+                    if (evaluateSubject(root, obj.getSubject())) {
+                        Constraint c = addConstraint(root, obj);
+                        info("the objective constraint '"+c.getName()+"' should be resolved");
+                        Variable objVar = c.getObjectVariable();
+
+                        /*
+                         * if it is a binary constraint, we construct the graph's path.
+                         */
+                        if (objVar != null && !objVar.isPrimitive()) {
+                            buildObject(objVar, (Element)obj.getObject());
+                        }
+                    } else {
+                        info("the objective '"+obj.getName()+"' does not correspond to the root variable!");
+                    }
+                }
+            }
+
+        }
+    }
+
+    /**
+     * For the element 'e' specified on the archetype and which is a subject of an archetype objective,
+     * evaluate if it corresponds to the actual variable to resolve 'var'.
+     * @param var
+     * @param e
+     * @return
+     */
+    private boolean evaluateSubject(Variable var, Element e) {
+        Stack<Constraint> stack = new Stack<Constraint>();
+        if (!evaluateSubject(var, e, stack)) {
+            // vider stack
+            while (!stack.isEmpty()) {
+                Constraint c = stack.pop();
+                var.removeConstraint(c);
+                //System.out.println("** removing characteristic constraint for subject var: " + c.getName());
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Recursive implementation of the evaluateSubject function.
+     * @param var
+     * @param e
+     * @param stack
+     * @return
+     */
+    private boolean evaluateSubject(Variable var, Element e, Stack<Constraint> stack) {
+        if (var.values.size() > 0) {
+            /* if only one predicate is false, return false*/
+            for (Characteristic car : e.getUnaryCharacteristics()) {
+                Constraint c = addConstraint(var, car);
+                stack.push(c);
+                //System.out.println("** adding characteristic constraint for subject var: " + c.getName());
+                if (c.check(this.agent) == false)
+                    return false;
+                //else
+                //System.out.println("** checked ok");
+            }
+            /*
+            for (Characteristic car : e.getBinaryCharacteristics()) {
+                Constraint c = addConstraint(var, car);
+                System.out.println("** adding characteristic constraint for subject var: " + c.getName());
+                stack.push(c);
+                c.init(this.agent); // initialize object variable.
+                if (c.getObjectVariable().values.size() == 0)
+                    // no initialization value from the subject var.
+                    return false;
+                if (evaluateSubject(c.getObjectVariable(), (Element) car.getObject()) == false)
+                    return false;
+            } */
+            return true;
+        }
+        return false;
+    }
+
+    private void buildObject(Variable var, Element e) {
+
+        for (Characteristic car : e.getUnaryCharacteristics()) {
+            Constraint c = addConstraint(var, car);
+            //info("** adding unary characteristic constraint for subject var: " + c.getName());
+        }
+        for (Characteristic car : e.getBinaryCharacteristics()) {
+            Constraint c = addConstraint(var, car);
+            //info("** adding binary characteristic constraint for subject var: " + c.getName());
+            buildObject(c.getObjectVariable(), (Element)car.getObject());
+        }
+        for (Objective obj : this.agent.getArchetype().getObjectives()) {
+            if (obj.getSubject() == e) {
+                Constraint c = addConstraint(var, obj);
+                info("the objective constraint '"+c.getName()+"' is added to the description of the variable " + var.getName());
+                Variable objVar = c.getObjectVariable();
+                        /*
+                         * if it is a binary constraint, we construct the graph's path.
+                         */
+                if (objVar != null && !objVar.isPrimitive()) {
+                    buildObject(objVar, (Element)obj.getObject());
+                }
+            }
+        }
+        /*
+        for (Objective car : e.getUnaryObjectives()) {
+            Constraint c = addConstraint(var, car);
+            info("** adding unary characteristic(obj) constraint for subject var: " + c.getName());
+        }
+        for (Objective car : e.getBinaryObjectives()) {
+            Constraint c = addConstraint(var, car);
+            info("** adding binary characteristic(obj) constraint for subject var: " + c.getName());
+            buildObject(c.getObjectVariable(), (Element)car.getObject());
+        } */
+
     }
 
     /**
@@ -156,39 +305,7 @@ public class ResolutionGraph {
     }
 
 
-    /**
-     * Find Objective constraints to be applied to the current root variable instance.
-     */
-    private void preProcessing() {
-        Archetype archetype = this.agent.getArchetype();
-        if (archetype != null) {
-            // findValue all objectives for this element
-            for (Objective obj : archetype.getObjectives()) {
-                /*
-                 * if the subject of the objective constraint has the same metamodel as the root variable
-                 */
-                if (obj.getSubject().getName().equalsIgnoreCase(root.getName()) &&
-                        obj.getNamespace().equalsIgnoreCase(root.getNamespace())) {
 
-                    // we check if all the descriptions in the archetype for this subject variable are met for the
-                    // current instance
-                    if (evaluateSubject(root, obj.getSubject())) {
-                        Constraint c = addConstraint(root, obj);
-                        info("the objective constraint '"+c.getName()+"' should be resolved");
-                        Variable objVar = c.getObjectVariable();
-
-                        /*
-                         * if it is a binary constraint, we construct the graph's path.
-                         */
-                        if (objVar != null && !objVar.isPrimitive()) {
-                            buildObject(objVar, (Element)obj.getObject());
-                        }
-                    }
-                }
-            }
-
-        }
-    }
 
     /**
      * Resolve an objective constraint
@@ -245,14 +362,17 @@ public class ResolutionGraph {
 
 
     private String createUsingCharacteristics(Variable v) {
+
         if (v != null && v.getCubeAgent() != null) {
             if (v.getCubeAgent().equalsIgnoreCase(this.agent.getUri())) {
+                info("creating local new instance using caracteristics : " + v.getTextualDescription());
                 // apply binary constraints
                 Properties props = new Properties();
                 for (Property p : v.getProperties()) {
                     props.put(p.getName(), p.getValue());
                 }
                 try {
+
                     ManagedElement me = agent.newManagedElement(v.getNamespace(), v.getName(), props);
                     //System.out.println(me.getTextualDescription());
                     if (me != null) {
@@ -326,6 +446,7 @@ public class ResolutionGraph {
         info("findValue value for '"+v.getName()+"' using characteristics..\n"+v.getTextualDescription());
         if (v.getCubeAgent() != null) {
             if (v.getCubeAgent().equalsIgnoreCase(this.agent.getUri())) {
+
                 info("... local search");
                 // local search
                 // TODO only valid instancs?
@@ -359,10 +480,15 @@ public class ResolutionGraph {
                 String agent = v.getCubeAgent();
                 CMessage msg = new CMessage();
                 msg.setTo(agent);
+                msg.setFrom(this.agent.getUri());
+                msg.setReplyTo(this.agent.getUri());
                 msg.setObject("resolution");
                 msg.setBody("findUsingCharacteristics");
                 msg.setAttachement(v);
                 try {
+
+                    //System.out.println(msg.toString());
+
                     CMessage resultmsg = ((ResolverImpl)this.resolver).sendAndWait(msg);
                     if (resultmsg != null) {
                         if (resultmsg.getBody() != null) {
@@ -540,48 +666,62 @@ public class ResolutionGraph {
 
                 //apply binary constraints
 
+                Object old = v.getValue();
+
                 for (Constraint c : v.getBinaryConstraints()) {
                     //System.out.println("######### 1");
+                    if (old != null) {
+                        c.getObjectVariable().removeValue();
+                    }
                     if (c.getObjectVariable() != null && c.getObjectVariable().hasValue()) {
-                        //System.out.println("######### 2");
+                       // System.out.println("######### object.value: " + c.getObjectVariable().getValue());
+                        //c.getObjectVariable().removeValue();
                         c.applyDescription(agent);
                         //System.out.println("######### " + c.getObjectVariable().getValue());
                         c.getObjectVariable().removeValue();
-                        Object old = v.getValue();
-                        String uuid = createUsingCharacteristics(v);
-                        if (uuid != null) {
-                            ManagedElement m1 = agent.getRuntimeModelController().getLocalElement(uuid);
-                            //System.out.println("######### new value:" + m1.getTextualDescription());
-                            if (old != null && m1 != null) {
-                                ManagedElement m2 = agent.getRuntimeModelController().getLocalElement(old.toString());
-                                //System.out.println("######### old value:" + m2.getTextualDescription());
-                                if (m2 != null) {
-                                    m1.removeEmptyProperties();
-                                    m1.removeEmptyReferences();
-                                    m2.removeEmptyProperties();
-                                    m2.removeEmptyReferences();
-                                    if (agent.getRuntimeModelController().areSimilar(uuid, old.toString())) {
-                                        //System.out.println("######### old and new values similar!");
-                                        return null;
-                                    }
-                                }
-                            }
-                            v.values.push(uuid);
-                            return uuid;
-                        }
+
                     }
                 }
 
+
+                //System.out.println("######### old.value" + old);
+                String uuid = createUsingCharacteristics(v);
+                if (uuid != null) {
+                    if (old != null ) {
+
+                        if (agent.getRuntimeModelController().areSimilar(uuid, old.toString())) {
+                            System.out.println("######### old and new values similar!");
+                            v.findStep++;
+                            return uuid;
+                        } else {
+                            System.out.println("old and new are not similar!");
+                            System.out.println("old :" + old);
+                            System.out.println("new :" + uuid);
+                        }
+                    }  else {
+                        System.out.println("old value null!");
+                    }
+
+                    v.values.push(uuid);
+                    //c.getObjectVariable().removeValue();
+                    return uuid;
+                }  else {
+                    System.out.println("create using characteristics return null!");
+                }
+                v.findStep++;
+                /*
                 String uuid = createUsingCharacteristics(v);
                 if (uuid != null) {
                     v.values.push(uuid);
-                    info("step 3 : error while creating an instance for variable '"+v.getName()+"'!");
+                    v.findStep++;
                     return uuid;
                 }
-                v.findStep++;
+                */
+                //v.findStep++;
 
             }
             default: {
+                info("step 3 : error while creating an instance for variable '"+v.getName()+"'!");
                 // no solution was found!
                 return null;
             }
@@ -619,9 +759,10 @@ public class ResolutionGraph {
                     //    uuid = createUsingCharacteristics(v);
                     //}
                 }
-                info("step 3 : creation problem!");
+
             }
             default: {
+                info("step 3 : error while creating an instance for variable '"+v.getName()+"'!");
                 // no solution was found!
                 return null;
             }
@@ -676,72 +817,9 @@ public class ResolutionGraph {
         }
     }
 
-    private boolean evaluateSubject(Variable var, Element e) {
-        Stack<Constraint> stack = new Stack<Constraint>();
-        if (!evaluateSubject(var, e, stack)) {
-            // vider stack
-            while (!stack.isEmpty()) {
-                Constraint c = stack.pop();
-                var.removeConstraint(c);
-                //System.out.println("** removing characteristic constraint for subject var: " + c.getName());
-            }
-            return false;
-        } else {
-            return true;
-        }
-    }
 
-    private boolean evaluateSubject(Variable var, Element e, Stack<Constraint> stack) {
-        if (var.values.size() > 0) {
-            /* if only one predicate is false, return false*/
-            for (Characteristic car : e.getUnaryCharacteristics()) {
-                Constraint c = addConstraint(var, car);
-                stack.push(c);
-                //System.out.println("** adding characteristic constraint for subject var: " + c.getName());
-                if (c.check(this.agent) == false)
-                    return false;
-                //else
-                    //System.out.println("** checked ok");
-            }
-            for (Characteristic car : e.getBinaryCharacteristics()) {
-                Constraint c = addConstraint(var, car);
-                //System.out.println("** adding characteristic constraint for subject var: " + c.getName());
-                stack.push(c);
-                c.init(this.agent); // initialize object variable.
-                if (c.getObjectVariable().values.size() == 0)
-                    // no initialization value from the subject var.
-                    return false;
-                if (evaluateSubject(c.getObjectVariable(), (Element) car.getObject()) == false)
-                    return false;
-            }
-            return true;
-        }
-        return false;
-    }
 
-    private void buildObject(Variable var, Element e) {
 
-        for (Characteristic car : e.getUnaryCharacteristics()) {
-            Constraint c = addConstraint(var, car);
-            //info("** adding unary characteristic constraint for subject var: " + c.getName());
-        }
-        for (Characteristic car : e.getBinaryCharacteristics()) {
-            Constraint c = addConstraint(var, car);
-            //info("** adding binary characteristic constraint for subject var: " + c.getName());
-            buildObject(c.getObjectVariable(), (Element)car.getObject());
-        }
-        /*
-        for (Objective car : e.getUnaryObjectives()) {
-            Constraint c = addConstraint(var, car);
-            info("** adding unary characteristic(obj) constraint for subject var: " + c.getName());
-        }
-        for (Objective car : e.getBinaryObjectives()) {
-            Constraint c = addConstraint(var, car);
-            info("** adding binary characteristic(obj) constraint for subject var: " + c.getName());
-            buildObject(c.getObjectVariable(), (Element)car.getObject());
-        } */
-
-    }
 
     private Constraint addConstraint(Variable var, Objective objective) {
         Variable objvar = null;

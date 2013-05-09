@@ -39,10 +39,10 @@ public class Node extends AbstractManagedElement {
 
     public static final String NAME = "Node";
 
-    public static final String CORE_NODE_ID = "core.node.id";
-    public static final String CORE_NODE_TYPE = "core.node.type";
-    public static final String CORE_NODE_SCOPE = "core.node.scope";
-    public static final String CORE_NODE_COMPONENTS = "core.node.components";
+    public static final String CORE_NODE_ID = "id";
+    public static final String CORE_NODE_TYPE = "type";
+    public static final String CORE_NODE_SCOPE = "scope";
+    public static final String CORE_NODE_COMPONENTS = "components";
 
     public Node(CubeAgent agent) {
         super(agent);

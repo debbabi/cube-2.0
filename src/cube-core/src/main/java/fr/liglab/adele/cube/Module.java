@@ -217,7 +217,7 @@ public abstract class Module extends Observable implements IModule, TrackerCusto
 	 * Start the tracker.
 	 */
 	public void start() {	
-		//System.out.println("////////// run module " + this.getName());
+		//System.out.println("////////// start module " + this.getName());
 		registerTracker();
 	}
 

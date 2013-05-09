@@ -20,7 +20,6 @@ package fr.liglab.adele.cube.agent.defaults;
 
 import fr.liglab.adele.cube.agent.*;
 import fr.liglab.adele.cube.metamodel.*;
-import fr.liglab.adele.cube.plugins.core.model.Node;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,33 +36,6 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
 
     public RuntimeModelControllerImpl(CubeAgent agent) {
         this.agent = agent;
-    }
-
-    /*
-    protected String validate(ManagedElement element) {
-        if (element != null) {
-            ((AbstractManagedElement)element).updateState(ManagedElement.VALID);
-        }
-
-        //if (isInRuntimeModel(this.runtimeModel, element)) {
-
-        //}
-        //((RuntimeModelImpl)this.runtimeModel).addUnmanagedElement(element);
-        return element.getUUID();
-    }*/
-
-    /**
-     * Add an element to the local Runtime Model.
-     * It puts its initial state to UNMANAGED.
-     * @param element
-     * @return
-     */
-    public String addManagedElement(ManagedElement element) {
-        if (element != null) {
-            ((AbstractManagedElement)element).updateState(ManagedElement.UNMANAGED);
-        }
-        //((RuntimeModelImpl)this.runtimeModel).addUnmanagedElement(element);
-        return element.getUUID();
     }
 
     public String getAgentOfElement(String managed_element_uuid) {
@@ -90,11 +62,6 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
         }
         return false;
     }
-
-    /*
-    public List<Property> getProperties(String managed_element_uuid) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    } */
 
     public String getPropertyValue(String managed_element_uuid, String name) {
         ManagedElement me1 = getLocalElement(managed_element_uuid);
@@ -170,11 +137,10 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
     }
 
     public List<String> getReferencedElements(String managed_element_uuid, String reference_name) {
-        //System.out.println("CONTROLLER: get referenced elements for: " + managed_element_uuid + " >" + reference_name);
+
         List<String> result = new ArrayList<String>();
         ManagedElement me1 = getLocalElement(managed_element_uuid);
         if (me1 != null) {
-            //System.out.println("CONTROLLER: element>\n" + me1.getTextualDescription());
             Reference r = me1.getReference(reference_name);
             if (r != null) {
                 return r.getReferencedElements();
@@ -182,7 +148,6 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                 //System.out.println("CONTROLLER: no reference with name: " + reference_name);
             }
         } else {
-            //System.out.println("CONTROLLER: no element with uuid: " + managed_element_uuid);
             String auri = agent.getExternalAgentUri(managed_element_uuid);
             if (auri != null) {
                 CMessage msg = new CMessage();
@@ -195,16 +160,12 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                     CMessage resultmsg = sendAndWait(msg);
                     if (resultmsg != null) {
                         if (resultmsg.getBody() != null) {
-                            //System.out.println(resultmsg.getBody());
                             String[] tmp = resultmsg.getBody().toString().split(",");
                             for (int i=0; i<tmp.length; i++) {
-                                //System.out.println(tmp[i]);
                                 if (tmp[i] != null && tmp[i].length()>0) {
                                     String[] tmp2 = tmp[i].split("###");
                                     String agenturi = tmp2[0];
-                                    //System.out.println(agenturi);
                                     String elementuuid = tmp2[1];
-                                    //System.out.println(elementuuid);
                                     if (!agenturi.equalsIgnoreCase(getCubeAgent().getUri())) {
                                         this.agent.addExternalElement(elementuuid, agenturi);
                                     }
@@ -224,31 +185,38 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
 
     }
 
-    public boolean addReference(String managed_element_uuid, String reference_name, String referenced_element_uuid) throws InvalidNameException {
+    public boolean addReferencedElement(String managed_element_uuid, String reference_name, String referenced_element_uuid) throws InvalidNameException {
+        return addReferencedElement(managed_element_uuid, reference_name, false, referenced_element_uuid);
+    }
+
+    public boolean addReferencedElement(String managed_element_uuid, String reference_name, boolean onlyone, String referenced_element_uuid) throws InvalidNameException {
         ManagedElement me1 = getLocalElement(managed_element_uuid);
         if (me1 != null) {
-            //System.out.println("!!!!!!!!!!!! add reference (local): " + managed_element_uuid + " - " + reference_name + " - " + referenced_element_uuid.toString());
-            Reference r = me1.addReference(reference_name, false);
+            //System.out.println("add Local Reference Element ...");
+            Reference r = me1.getReference(reference_name);
+            if (r == null) {
+               // System.out.println("Reference '"+reference_name+"' does not exists! we will create it!");
+                r = me1.addReference(reference_name, onlyone);
+            }
             if (r != null) {
                 r.addReferencedElement(referenced_element_uuid);
                 return true;
             }
         } else {
-            //System.out.println("!!!!!!!!!!!! add reference (remote): " + managed_element_uuid + " - " + reference_name + " - " + referenced_element_uuid.toString());
+            //System.out.println("add Remote Reference Element ...");
             String auri = agent.getExternalAgentUri(managed_element_uuid);
             if (auri != null) {
                 CMessage msg = new CMessage();
                 msg.setTo(auri);
                 msg.setObject("runtimemodel");
-                msg.setBody("addReference");
+                msg.setBody("addReferencedElement");
                 msg.addHeader("uuid", managed_element_uuid);
                 msg.addHeader("name", reference_name);
+                msg.addHeader("onlyone", onlyone==true?"true":"false");
                 msg.addHeader("refuuid", referenced_element_uuid);
                 try {
-                    //System.out.println("sending msg: " + msg.toString());
                     CMessage resultmsg = sendAndWait(msg);
                     if (resultmsg != null) {
-                        //System.out.println(resultmsg.toString());
                         if (resultmsg.getBody() != null) {
                             if (resultmsg.getBody().toString().equalsIgnoreCase("true")) {
                                 return true;
@@ -265,7 +233,7 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
         return false;
     }
 
-    public boolean removeReference(String managed_element_uuid, String reference_name, String referenced_element_uuid) {
+    public boolean removeReferencedElement(String managed_element_uuid, String reference_name, String referenced_element_uuid) {
         ManagedElement me1 = getLocalElement(managed_element_uuid);
         if (me1 != null) {
             Reference r = me1.getReference(reference_name);
@@ -278,7 +246,7 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                 CMessage msg = new CMessage();
                 msg.setTo(auri);
                 msg.setObject("runtimemodel");
-                msg.setBody("removeReference");
+                msg.setBody("removeReferencedElement");
                 msg.addHeader("uuid", managed_element_uuid);
                 msg.addHeader("name", reference_name);
                 msg.addHeader("refuuid", referenced_element_uuid);
@@ -299,22 +267,20 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
         return false;
     }
 
-    public boolean hasReferencedElements(String managed_element_uuid, String reference_name, String referenced_element_uuri) {
+    public boolean hasReferencedElement(String managed_element_uuid, String reference_name, String referenced_element_uuri) {
         ManagedElement me1 = getLocalElement(managed_element_uuid);
         if (me1 != null) {
-            //System.out.println("... hasReferencedElements (local)");
             Reference r = me1.getReference(reference_name);
             if (r != null) {
                 return r.hasReferencedElement(referenced_element_uuri);
             }
         }  else {
-            //System.out.println("... hasReferencedElements (remote)");
             String auri = agent.getExternalAgentUri(managed_element_uuid);
             if (auri != null) {
                 CMessage msg = new CMessage();
                 msg.setTo(auri);
                 msg.setObject("runtimemodel");
-                msg.setBody("hasReferencedElements");
+                msg.setBody("hasReferencedElement");
                 msg.addHeader("uuid", managed_element_uuid);
                 msg.addHeader("name", reference_name);
                 msg.addHeader("refuuid", referenced_element_uuri);
@@ -337,8 +303,18 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
 
     public boolean areSimilar(String instance_uuid1, String instance_uuid2) {
         ManagedElement m1 = getLocalElement(instance_uuid1);
+        if (m1 == null) {
+            m1 = getRemoteElement(instance_uuid1);
+        }
         ManagedElement m2 = getLocalElement(instance_uuid2);
+        if (m2 == null) {
+            m2 = getRemoteElement(instance_uuid2);
+        }
         if (m1 != null && m2 != null) {
+            m1.removeEmptyReferences();
+            m1.removeEmptyProperties();
+            m2.removeEmptyReferences();
+            m2.removeEmptyReferences();
             return m1.isSimilar(m2);
         }
         return false;
@@ -355,11 +331,38 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                 }
             }
         }
-        //System.out.println("[WARNING] RM.Constroller has not find the element " + managed_element_uuid);
         return null;
     }
 
+    public ManagedElement getRemoteElement(String managed_element_uuid) {
+        String auri = agent.getExternalAgentUri(managed_element_uuid);
+        if (auri != null) {
+            CMessage msg = new CMessage();
+            msg.setTo(auri);
+            msg.setObject("runtimemodel");
+            msg.setBody("getRemoteElement");
+            msg.addHeader("uuid", managed_element_uuid);
+            try {
+                CMessage resultmsg = sendAndWait(msg);
+                if (resultmsg != null) {
+                    return resultmsg.getAttachement();
+                }
+            } catch (TimeOutException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
 
+    public ManagedElement getElement(String managed_element_uuid) {
+        String auri = agent.getExternalAgentUri(managed_element_uuid);
+        if (auri != null) {
+            return getRemoteElement(managed_element_uuid);
+        } else {
+            return getLocalElement(managed_element_uuid);
+        }
+        //return null;
+    }
 
     public void receiveMessage(CMessage msg) {
         if (msg.getCorrelation() == waitingCorrelation) {
@@ -381,7 +384,6 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
     protected void handleMessage(CMessage msg) throws Exception {
 
         if (msg != null) {
-            //System.out.println("\n\n received message to resolve! \n\n "+msg.toString()+" \n\n");
             if (msg.getBody() != null) {
                 if (msg.getBody().toString().equalsIgnoreCase("getPropertyValue")) {
                     Object uuid = msg.getHeader("uuid");
@@ -405,7 +407,7 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                } if (msg.getBody().toString().equalsIgnoreCase("addProperty")) {
+                } else if (msg.getBody().toString().equalsIgnoreCase("addProperty")) {
                     Object uuid = msg.getHeader("uuid");
                     Object name = msg.getHeader("name");
                     Object value = msg.getHeader("value");
@@ -431,7 +433,7 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                } if (msg.getBody().toString().equalsIgnoreCase("getReferencedElements")) {
+                } else if (msg.getBody().toString().equalsIgnoreCase("getReferencedElements")) {
                     Object uuid = msg.getHeader("uuid");
                     Object name = msg.getHeader("name");
 
@@ -457,15 +459,17 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                }   if (msg.getBody().toString().equalsIgnoreCase("addReference")) {
+                }   else if (msg.getBody().toString().equalsIgnoreCase("addReferencedElement")) {
                     Object uuid = msg.getHeader("uuid");
                     Object name = msg.getHeader("name");
+                    Object onlyone = msg.getHeader("onlyone");
                     Object refuuid = msg.getHeader("refuuid");
 
                     boolean p = false;
                     if (uuid != null && name != null && refuuid != null) {
                         this.agent.addExternalElement(refuuid.toString(), msg.getFrom().toString());
-                        p = addReference(uuid.toString(), name.toString(), refuuid.toString());
+                        p = addReferencedElement(uuid.toString(), name.toString(),
+                                onlyone.toString().equalsIgnoreCase("true")?true:false , refuuid.toString());
                     }
                     CMessage resmsg = new CMessage();
                     resmsg.setTo(msg.getFrom());
@@ -484,14 +488,14 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                }    if (msg.getBody().toString().equalsIgnoreCase("removeReference")) {
+                }   else if (msg.getBody().toString().equalsIgnoreCase("removeReferencedElement")) {
                     Object uuid = msg.getHeader("uuid");
                     Object name = msg.getHeader("name");
                     Object refuuid = msg.getHeader("refuuid");
 
                     boolean p = false;
                     if (uuid != null && name != null && refuuid != null) {
-                        p = removeReference(uuid.toString(), name.toString(), refuuid.toString());
+                        p = removeReferencedElement(uuid.toString(), name.toString(), refuuid.toString());
                     }
                     CMessage resmsg = new CMessage();
                     resmsg.setTo(msg.getFrom());
@@ -510,14 +514,14 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                }    if (msg.getBody().toString().equalsIgnoreCase("hasReferencedElements")) {
+                }   else if (msg.getBody().toString().equalsIgnoreCase("hasReferencedElement")) {
                     Object uuid = msg.getHeader("uuid");
                     Object name = msg.getHeader("name");
                     Object refuuid = msg.getHeader("refuuid");
 
                     boolean p = false;
                     if (uuid != null && name != null && refuuid != null) {
-                        p = hasReferencedElements(uuid.toString(), name.toString(), refuuid.toString());
+                        p = hasReferencedElement(uuid.toString(), name.toString(), refuuid.toString());
                     }
                     CMessage resmsg = new CMessage();
                     resmsg.setTo(msg.getFrom());
@@ -527,6 +531,26 @@ public class RuntimeModelControllerImpl implements RuntimeModelController {
                         resmsg.setBody("true");
                     else
                         resmsg.setBody("false");
+                    try {
+                        getCubeAgent().getCommunicator().sendMessage(resmsg);
+                    } catch (CommunicationException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }  else if (msg.getBody().toString().equalsIgnoreCase("getRemoteElement")) {
+                    Object uuid = msg.getHeader("uuid");
+                    ManagedElement me = null;
+                    if (uuid != null) {
+                        me = getLocalElement(uuid.toString());
+                    }
+                    CMessage resmsg = new CMessage();
+                    resmsg.setTo(msg.getFrom());
+                    resmsg.setCorrelation(msg.getCorrelation());
+                    resmsg.setAttachement(me);
+                    resmsg.setObject(msg.getObject());
                     try {
                         getCubeAgent().getCommunicator().sendMessage(resmsg);
                     } catch (CommunicationException e) {

@@ -25,42 +25,42 @@ import fr.liglab.adele.cube.util.Utils;
 
 public class Client implements Runnable {
 
-	private String host;
-	private long port;
-	private Socket socket;
-	private ObjectOutputStream oos = null;
-	private Object obj;
-	
-	public Client(Object obj, String host, long port) {
-		this.obj = obj;
-		this.host = host;
-		this.port = port;
-		try {
-			socket = new Socket(this.host, Utils.safeLongToInt(this.port));
-			oos = new ObjectOutputStream(socket.getOutputStream());		
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
-	}
-	
-	public void run() {
-		try {
-			oos.writeObject(obj);
-			oos.flush();
-			// close streams and connections
-			oos.close();    
-			socket.close();
-		} catch (IOException e) {
-			try {
-				socket.close();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}		
-	}
+    private String host;
+    private long port;
+    private Socket socket;
+    private ObjectOutputStream oos = null;
+    private Object obj;
+
+    public Client(Object obj, String host, long port) {
+        this.obj = obj;
+        this.host = host;
+        this.port = port;
+        try {
+            socket = new Socket(this.host, Utils.safeLongToInt(this.port));
+            oos = new ObjectOutputStream(socket.getOutputStream());
+        } catch (UnknownHostException e) {
+            // TODO Auto-generated catch block
+            //e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            //e.printStackTrace();
+        }
+    }
+
+    public void run() {
+        try {
+            oos.writeObject(obj);
+            oos.flush();
+            // close streams and connections
+            oos.close();
+            socket.close();
+        } catch (IOException e) {
+            try {
+                socket.close();
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                //e1.printStackTrace();
+            }
+        }
+    }
 }

@@ -137,6 +137,12 @@ public interface ManagedElement {
     public String getTextualDescription();
 
     /**
+     * Gets an HTML description of the element.
+     * @return
+     */
+    public String getHTMLDescription();
+
+    /**
      *
      * @param name
      * @param onlyOne
@@ -149,8 +155,9 @@ public interface ManagedElement {
 
     public boolean removeEmptyReferences();
 
-    public boolean isSimilar(ManagedElement managedElement);
+    public boolean removeReferencedElement(String ref);
 
+    public boolean isSimilar(ManagedElement managedElement);
 
 
 }

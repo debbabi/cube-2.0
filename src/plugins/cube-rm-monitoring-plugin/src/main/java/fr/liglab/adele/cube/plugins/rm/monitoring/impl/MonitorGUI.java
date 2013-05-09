@@ -25,13 +25,13 @@ import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import fr.liglab.adele.cube.agent.CubeAgent;
 import fr.liglab.adele.cube.metamodel.ManagedElement;
 import fr.liglab.adele.cube.metamodel.Reference;
+import fr.liglab.adele.cube.plugins.core.model.Component;
+import fr.liglab.adele.cube.plugins.core.model.Scope;
 import prefuse.Constants;
 import prefuse.Display;
 import prefuse.Visualization;
@@ -67,8 +67,7 @@ public class MonitorGUI extends JFrame {
 
     private static final String ID = "id";
     private static final String LABEL = "name";
-    private static final String URI = "uri";
-    private static final String TYPE = "type";
+    private static final String DESCRIPTION = "descr";
     private static final String STATE = "state";
 
 	private static final String RUBBER_BAND = "rubberband";
@@ -103,9 +102,10 @@ public class MonitorGUI extends JFrame {
         initActions();
 
         display = buildGraphDisplay();
-		display.addControlListener(new ToolTipControl(URI));
+		display.addControlListener(new ToolTipControl(ID));
+        display.addControlListener(new FinalControlListener());
 
-		initGui();
+        initGui();
 		
 	}
 	
@@ -117,9 +117,15 @@ public class MonitorGUI extends JFrame {
 
                     String name = ci.getName();
                     N.set(ID, ci.getUUID());
-                    N.set(LABEL, name);
-                    N.set(URI, ci.getTextualDescription());
-                    //N.set(TYPE, ci.getName());
+                    if (ci.getName().equalsIgnoreCase(Component.NAME))
+                        N.set(LABEL, "Comp ("+((Component)ci).getComponentType() + ")");
+                    else if (ci.getName().equalsIgnoreCase(fr.liglab.adele.cube.plugins.core.model.Node.NAME))
+                        N.set(LABEL, "Node ("+((fr.liglab.adele.cube.plugins.core.model.Node)ci).getNodeType() + ")");
+                    else if (ci.getName().equalsIgnoreCase(Scope.NAME))
+                        N.set(LABEL, "Scope ("+((Scope)ci).getScopeId() + ")");
+                    else
+                        N.set(LABEL, ci.getName());
+                    N.set(DESCRIPTION, ci.getHTMLDescription());
                     N.set(STATE, ci.getState());
                     for (Reference r : ci.getReferences()) {
                         for (String ref : r.getReferencedElements()) {
@@ -146,8 +152,7 @@ public class MonitorGUI extends JFrame {
             graph = new Graph(true);
             graph.addColumn(ID, String.class);
             graph.addColumn(LABEL, String.class);
-            graph.addColumn(URI, String.class);
-            //graph.addColumn(TYPE, String.class);
+            graph.addColumn(DESCRIPTION, String.class);
             graph.addColumn(STATE, int.class);
         } catch(Exception ex) {
             System.out.println("..... pb .....");
@@ -240,7 +245,7 @@ public class MonitorGUI extends JFrame {
 
             //vis.putAction("draw", draw);
             vis.putAction("layout", layout);
-            //vis.run("draw");
+            //vis.start("draw");
 
             vis.run("layout");
         } catch(Exception ex) {
@@ -269,7 +274,7 @@ public class MonitorGUI extends JFrame {
 	}
 
 	protected synchronized void updateGraph() {
-		System.out.println("udpdating graph..");
+		//System.out.println("udpdating graph..");
         try {
             nodes.clear();
             nodes = new Hashtable();
@@ -290,7 +295,7 @@ public class MonitorGUI extends JFrame {
 	}
 	
 	private void initGui() {
-		label = new JLabel("Refresh View");
+		label = new JButton("Refresh View");
 		if (this.cubeInstance != null) {
 			setTitle(this.cubeInstance.getUri().toString());
 
@@ -339,6 +344,6 @@ public class MonitorGUI extends JFrame {
 		getContentPane().add(label, BorderLayout.NORTH);
 		getContentPane().add(this.display, BorderLayout.CENTER);
 	}
-	JLabel label = null;
+	JButton label = null;
 	
 }

@@ -72,8 +72,8 @@
 			</goal>
 			<goal>
 				<core:connected s="@a" o="@b2" r="fc"/>
-				<core:connected s="@b" o="@c" r="c"/>
-				<core:connected s="@c" o="@d" r="c"/>
+				<!--core:connected s="@b" o="@c" r="c"/>
+				<core:connected s="@c" o="@d" r="c"/-->
 			</goal>
 		</goals>
 

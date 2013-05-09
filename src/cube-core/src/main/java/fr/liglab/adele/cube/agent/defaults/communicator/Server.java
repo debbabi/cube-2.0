@@ -37,185 +37,185 @@ import fr.liglab.adele.cube.CubeLogger;
  */
 public abstract class Server {
 
-	private int port;
-	private ServerSocket serverSocket;
-	private boolean shutdownRequested = false;
-	private static long inc = 1;
-	private CubeLogger log = null;
+    private int port;
+    private ServerSocket serverSocket;
+    private boolean shutdownRequested = false;
+    private static long inc = 1;
+    private CubeLogger log = null;
 
-	private Map<String, Socket> clients = new HashMap<String, Socket>();
+    private Map<String, Socket> clients = new HashMap<String, Socket>();
 
-	/**
-	 * Constructor
-	 * 
-	 * @param port
-	 * @param btx
-	 * @throws Exception
-	 */
-	public Server(int port, BundleContext btx) throws Exception {		
-		this.port = port;
-		log = new CubeLogger(btx, Server.class.getName());
-		
-		try {
-			serverSocket = new ServerSocket(this.port);
-			Thread t = new Thread(new AcceptClients(serverSocket), "Communicator-Server-" + inc++);
-			t.start();
-		} catch (IOException e) {
-			log.error(e.getMessage());
-		}
-	}
+    /**
+     * Constructor
+     *
+     * @param port
+     * @param btx
+     * @throws Exception
+     */
+    public Server(int port, BundleContext btx) throws Exception {
+        this.port = port;
+        log = new CubeLogger(btx, Server.class.getName());
 
-	public abstract void messageReceived(CMessage msg);
+        try {
+            serverSocket = new ServerSocket(this.port);
+            Thread t = new Thread(new AcceptClients(serverSocket), "Communicator-Server-" + inc++);
+            t.start();
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
 
-	public void run() {
-		try {
-			serverSocket = new ServerSocket(this.port);
-			log.info("Communicator Server created and listen to port " + this.port);
-			while (true) {
-				Socket clientSocket = serverSocket.accept();
-				if (shutdownRequested == false) {
-					connectToClient(clientSocket);
-				} else {
-					break;
-				}
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-		}
-	}
+    public abstract void messageReceived(CMessage msg);
 
-	private void connectToClient(Socket clientSocket) {
-		try {
-			//log.info(" ... connect To Client ...");
+    public void run() {
+        try {
+            serverSocket = new ServerSocket(this.port);
+            log.info("Communicator Server created and listen to port " + this.port);
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                if (shutdownRequested == false) {
+                    connectToClient(clientSocket);
+                } else {
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    private void connectToClient(Socket clientSocket) {
+        try {
+            //log.info(" ... connect To Client ...");
 			/*
 			 * save the client socket to be used after to communicate with that
 			 * client
 			 */
             String cid = getClientID(clientSocket);
-			saveClient(cid, clientSocket);
-			//log.info("client:" + cid);
+            saveClient(cid, clientSocket);
+            //log.info("client:" + cid);
 			/* input/output streams */
-			InputStream in = clientSocket.getInputStream();
-			OutputStream out = clientSocket.getOutputStream();
+            InputStream in = clientSocket.getInputStream();
+            OutputStream out = clientSocket.getOutputStream();
 
 			/*
 			 * BufferedReader plec = new BufferedReader(new InputStreamReader(
 			 * clientSocket.getInputStream()));
-			 * 
+			 *
 			 * PrintWriter pred = new PrintWriter(new BufferedWriter( new
 			 * OutputStreamWriter(clientSocket.getOutputStream())), true);
-			 * 
+			 *
 			 * while (true) { String str = plec.readLine(); // lecture du
 			 * message if (str.equals("END")) break;
 			 * System.out.println("ECHO = " + str); // trace locale
 			 * pred.println(str); // renvoi d'un écho } plec.close();
 			 * pred.close();
 			 */
-			clientSocket.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+            clientSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-	public void shutdown() {
-		log.info("Server shutdown..");
-		shutdownRequested = true;
-		try {
-			if (serverSocket != null) {
-				serverSocket.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+    public void shutdown() {
+        log.info("Server shutdown..");
+        shutdownRequested = true;
+        try {
+            if (serverSocket != null) {
+                serverSocket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-	private String getClientID(Socket socket) {
+    private String getClientID(Socket socket) {
         String cid = null;
-		if (socket != null) {
-			try {
-				cid = "cube://" + socket.getInetAddress().getHostAddress() +"/"+ socket.getPort();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return cid;
-	}
+        if (socket != null) {
+            try {
+                cid = "cube://" + socket.getInetAddress().getHostAddress() +"/"+ socket.getPort();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return cid;
+    }
 
-	private void saveClient(String id, Socket clientSocket) {
-		if (this.clients.get(id) == null) {
-			this.clients.put(id, clientSocket);
-		}
-	}
+    private void saveClient(String id, Socket clientSocket) {
+        if (this.clients.get(id) == null) {
+            this.clients.put(id, clientSocket);
+        }
+    }
 
-	class AcceptClients implements Runnable {
+    class AcceptClients implements Runnable {
 
-		private ServerSocket socketserver;
-		private Socket socket;
-		private int nbrclient = 1;
+        private ServerSocket socketserver;
+        private Socket socket;
+        private int nbrclient = 1;
 
-		final WorkQueue queue = new WorkQueue("server-connected-clients", 5);
-		
-		public AcceptClients(ServerSocket s) {
-			socketserver = s;
-			queue.start();
-		}
+        final WorkQueue queue = new WorkQueue("server-connected-clients", 5);
 
-		public void run() {
+        public AcceptClients(ServerSocket s) {
+            socketserver = s;
+            queue.start();
+        }
 
-			try {
-				while (true) {
+        public void run() {
 
-					socket = socketserver.accept(); // Un client se connecte on
-													// l'accepte
-					//System.out.println("Le client numéro " + nbrclient
-					//		+ " est connecté !");
-					queue.execute(new ClientWorker(socket));					
-					nbrclient++;
-					//socket.close();
-				}
+            try {
+                while (true) {
 
-			} catch (IOException e) {
+                    socket = socketserver.accept(); // Un client se connecte on
+                    // l'accepte
+                    //System.out.println("Le client numéro " + nbrclient
+                    //		+ " est connecté !");
+                    queue.execute(new ClientWorker(socket));
+                    nbrclient++;
+                    //socket.close();
+                }
+
+            } catch (IOException e) {
                 log.error(e.getMessage());
-			}
-		}
-	}
-	
-	class ClientWorker implements Runnable {
-		
-		private Socket socket;
-		private ObjectInputStream ois = null;
-		
-		public ClientWorker(Socket s) {
-			this.socket = s;
-			try {
-				ois = new ObjectInputStream(socket.getInputStream());
-			} catch (IOException e) {
-				try {
-					socket.close();
-		         }catch(Exception ex) {
-		           System.out.println(ex.getMessage());
-		         }
-			}
-			//TODO
-		}
-		
-		public void run() {
-			//System.out.println("//////////////// client worker!");
-			try {
-				 CMessage msg = (CMessage) ois.readObject();
-				 messageReceived(msg);
-			    // System.out.print(msg.toString());			     
-			     socket.close();
-			     ois.close();				
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
+            }
+        }
+    }
+
+    class ClientWorker implements Runnable {
+
+        private Socket socket;
+        private ObjectInputStream ois = null;
+
+        public ClientWorker(Socket s) {
+            this.socket = s;
+            try {
+                ois = new ObjectInputStream(socket.getInputStream());
+            } catch (IOException e) {
+                try {
+                    socket.close();
+                }catch(Exception ex) {
+                    System.out.println(ex.getMessage());
+                }
+            }
+            //TODO
+        }
+
+        public void run() {
+            //System.out.println("//////////////// client worker!");
+            try {
+                CMessage msg = (CMessage) ois.readObject();
+                messageReceived(msg);
+                // System.out.print(msg.toString());
+                socket.close();
+                ois.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
 	
 }

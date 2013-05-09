@@ -38,9 +38,9 @@ public class Scope extends AbstractManagedElement {
 
     public static final String NAME = "Scope";
 
-    public static final String CORE_SCOPE_ID = "core.scope.id";
-    public static final String CORE_SCOPE_MASTER = "core.scope.master";
-    public static final String CORE_SCOPE_NODES = "core.scope.nodes";
+    public static final String CORE_SCOPE_ID = "id";
+    public static final String CORE_SCOPE_MASTER = "master";
+    public static final String CORE_SCOPE_NODES = "nodes";
 
 
 

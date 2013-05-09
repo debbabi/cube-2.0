@@ -49,8 +49,8 @@ public class Connected implements ConstraintResolver {
         if (instance1_uuid != null && instance2_uuid != null) {
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                if (rmController.hasReferencedElements(instance1_uuid.toString(), Component.CORE_COMPONENT_OUTPUTS, instance2_uuid.toString())) {
-                    if (rmController.hasReferencedElements(instance2_uuid.toString(), Component.CORE_COMPONENT_INPUTS, instance1_uuid.toString())) {
+                if (rmController.hasReferencedElement(instance1_uuid.toString(), Component.CORE_COMPONENT_OUTPUTS, instance2_uuid.toString())) {
+                    if (rmController.hasReferencedElement(instance2_uuid.toString(), Component.CORE_COMPONENT_INPUTS, instance1_uuid.toString())) {
                         return true;
                     }
                 }
@@ -86,19 +86,24 @@ public class Connected implements ConstraintResolver {
         Object instance2_uuid = objectVariable.getValue();
 
         if (instance1_uuid != null && instance2_uuid != null) {
+            //System.out.println("performing connect objective! " + instance1_uuid + "-->" + instance2_uuid);
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
                 try {
-                if (rmController.addReference(instance1_uuid.toString(), Component.CORE_COMPONENT_OUTPUTS, instance2_uuid.toString())) {
-                    if (rmController.addReference(instance2_uuid.toString(), Component.CORE_COMPONENT_INPUTS, instance1_uuid.toString())) {
-                        return true;
+                    //System.out.println("1");
+                    if (rmController.addReferencedElement(instance1_uuid.toString(), Component.CORE_COMPONENT_OUTPUTS, false, instance2_uuid.toString())) {
+                        //System.out.println("2");
+                        if (rmController.addReferencedElement(instance2_uuid.toString(), Component.CORE_COMPONENT_INPUTS, false, instance1_uuid.toString())) {
+                            //System.out.println("3");
+                            return true;
+                        }
                     }
-                }
                 } catch (InvalidNameException ex) {
                     ex.printStackTrace();
                 }
             }
         }
+        System.out.println("4");
         return false;
     }
 
@@ -117,8 +122,8 @@ public class Connected implements ConstraintResolver {
         if (instance1_uuid != null && instance2_uuid != null) {
             RuntimeModelController rmController = agent.getRuntimeModelController();
             if (rmController != null) {
-                if (rmController.removeReference(instance1_uuid.toString(), Component.CORE_COMPONENT_OUTPUTS, instance2_uuid.toString())) {
-                    if (rmController.removeReference(instance2_uuid.toString(), Component.CORE_COMPONENT_INPUTS, instance1_uuid.toString())) {
+                if (rmController.removeReferencedElement(instance1_uuid.toString(), Component.CORE_COMPONENT_OUTPUTS, instance2_uuid.toString())) {
+                    if (rmController.removeReferencedElement(instance2_uuid.toString(), Component.CORE_COMPONENT_INPUTS, instance1_uuid.toString())) {
                         return true;
                     }
                 }

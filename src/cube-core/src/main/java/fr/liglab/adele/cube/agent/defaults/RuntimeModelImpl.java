@@ -36,6 +36,10 @@ public class RuntimeModelImpl implements RuntimeModel {
     private boolean changed = false;
     private Vector<RuntimeModelListener> listeners;
 
+    /**
+     * key:   uuid
+     * value: ManagedElement
+     */
     Map<String, ManagedElement> elements = new HashMap<String, ManagedElement>();
 
 
@@ -51,17 +55,18 @@ public class RuntimeModelImpl implements RuntimeModel {
      *
      * @param element Managed Element instance to be added.
      */
-    public void add(ManagedElement element) {
+    synchronized public void add(ManagedElement element) {
         if (element != null) {
             ((AbstractManagedElement)element).updateState(ManagedElement.UNCHECKED);
             this.elements.put(element.getUUID(), element);
             ((CubeAgentImpl)this.agent).deleteUnmanagedElement(element.getUUID());
-            setChanged();
-            notifyListeners(new Notification(RuntimeModelListener.NEW_UNCHECKED_INSTANCE, element));
+
+            //setChanged();
+            //notifyListeners(new Notification(RuntimeModelListener.NEW_UNCHECKED_INSTANCE, element));
         }
     }
 
-    void refresh() {
+    public synchronized void refresh() {
         setChanged();
         notifyListeners(new Notification(RuntimeModelListener.UPDATED_RUNTIMEMODEL, this));
     }
@@ -104,33 +109,37 @@ public class RuntimeModelImpl implements RuntimeModel {
         }
         return result;
     }
-    /*
-    void validate(ManagedElement me) {
-        if (me != null) {
-            ((AbstractManagedElement)me).updateState(ManagedElement.VALID);
-        }
-    } */
-    /*
-    void addUnmanagedElement(ManagedElement me) {
-        if (me.getState() == ManagedElement.UNMANAGED) {
-            this.elements.put(me.getUUID(), me);
-            setChanged();
-            notifyListeners(new Notification(RuntimeModelListener.NEW_UNMANAGED_INSTANCE, me));
-        }
-    }
 
-    private void addUncheckedElement(ManagedElement me) {
-        if (me.getState() == ManagedElement.UNCHECKED) {
-            this.elements.put(me.getUUID(), me);
-            setChanged();
-            notifyListeners(new Notification(RuntimeModelListener.NEW_UNCHECKED_INSTANCE, me));
-        }
-    }*/
-
-    private void addValidElement(ManagedElement me) {
+    /*
+    synchronized private void addValidElement(ManagedElement me) {
         Notification n = new Notification(RuntimeModelListener.NEW_VALID_INSTANCE);
+    } */
+
+    public ManagedElement getManagedElement(String uuid) {
+        return this.elements.get(uuid);
     }
 
+
+    synchronized void removeReferences(List<String> refs) {
+        if (refs != null) {
+
+            boolean changed = false;
+
+            for (String meuuid : this.elements.keySet()) {
+                ManagedElement me = this.elements.get(meuuid);
+                if (me != null) {
+                    for (String ref : refs) {
+                        changed = me.removeReferencedElement(ref);
+                    }
+                }
+            }
+
+            if (changed == true) {
+                setChanged();
+                notifyListeners(new Notification(RuntimeModelListener.UPDATED_RUNTIMEMODEL, this));
+            }
+        }
+    }
 
     /**
      * ================================ NOTIFICATIONS ===============================================
@@ -245,8 +254,7 @@ public class RuntimeModelImpl implements RuntimeModel {
         return changed;
       }
 
-    public ManagedElement getManagedElement(String uuid) {
-         return this.elements.get(uuid);
-    }
+
+
 
 }

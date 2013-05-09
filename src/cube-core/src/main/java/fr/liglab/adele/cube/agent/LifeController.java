@@ -25,7 +25,9 @@ package fr.liglab.adele.cube.agent;
  */
 public interface LifeController {
 
-    public void run();
+    public void keepAliveReceived(String agent);
+
+    public void start();
     public void stop();
     public void destroy();
 }

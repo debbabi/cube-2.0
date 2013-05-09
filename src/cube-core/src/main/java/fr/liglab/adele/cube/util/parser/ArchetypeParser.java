@@ -21,6 +21,7 @@ package fr.liglab.adele.cube.util.parser;
 import fr.liglab.adele.cube.CubeLogger;
 import fr.liglab.adele.cube.CubePlatform;
 import fr.liglab.adele.cube.archetype.*;
+import fr.liglab.adele.cube.plugins.core.CorePluginFactory;
 import fr.liglab.adele.cube.util.xml.XMLElement;
 import fr.liglab.adele.cube.util.xml.XMLParser;
 import org.osgi.framework.BundleContext;
@@ -267,36 +268,60 @@ public class ArchetypeParser {
 
         out += ">\n";
 
-        out += "<"+ELEMENTS+">\n";
-        for (Element e : archetype.getElements()) {
-            if (e.getCharacteristics().size() == 0)
-                out += "<"+e.getNamespace()+":"+e.getName()+" id=\""+e.getId()+"\"/>\n";
-            else {
-                out += "<"+e.getNamespace()+":"+e.getName()+" id=\""+e.getId()+"\">\n";
-                for (Characteristic c : e.getCharacteristics()) {
-                    if (c.getObject() instanceof Element)
-                        out += "<"+c.getNamespace()+":"+c.getName()+" o=\"@"+((Element)c.getObject()).getId()+"\"/>\n";
-                    else
-                        out += "<"+c.getNamespace()+":"+c.getName()+" o=\""+c.getObject()+"\"/>\n";
-                }
-                out += "</"+e.getNamespace()+":"+e.getName()+">\n";
-            }
-        }
-        out += "</"+ELEMENTS+">\n";
-
         out += "<"+GOALS+">\n";
 
         for (Goal g: archetype.getGoals()) {
             out += "<"+GOAL+" id=\""+g.getId()+"\" description=\""+g.getDescription()+"\">\n";
             for (Objective o : g.getObjectives()) {
-                if (o.getObject() instanceof Element)
-                    out += "<"+o.getNamespace()+":"+o.getName()+" s=\"@"+o.getSubject().getId()+"\" o=\"@"+((Element)o.getObject()).getId()+"\"/>\n";
-                else
+                if (o.getObject() instanceof Element)  {
+                    if (o.getNamespace() == CorePluginFactory.NAMESPACE)
+                        out += "<"+o.getName()+" s=\"@"+o.getSubject().getId()+"\" o=\"@"+((Element)o.getObject()).getId()+"\"/>\n";
+                    else
+                        out += "<"+o.getNamespace()+":"+o.getName()+" s=\"@"+o.getSubject().getId()+"\" o=\"@"+((Element)o.getObject()).getId()+"\"/>\n";
+                }
+                else {
                     out += "<"+o.getNamespace()+":"+o.getName()+" s=\"@"+o.getSubject().getId()+"\" o=\""+o.getObject().toString()+"\"/>\n";
+                }
             }
             out += "</"+GOAL+">\n";
         }
         out += "</"+GOALS+">\n";
+
+        out += "<"+ELEMENTS+">\n";
+        for (Element e : archetype.getElements()) {
+            if (e.getCharacteristics().size() == 0)
+                if (e.getNamespace() == CorePluginFactory.NAMESPACE)
+                    out += "<"+e.getName()+" id=\""+e.getId()+"\"/>\n";
+                else
+                    out += "<"+e.getNamespace()+":"+e.getName()+" id=\""+e.getId()+"\"/>\n";
+            else {
+                if (e.getNamespace() == CorePluginFactory.NAMESPACE)
+                    out += "<"+e.getName()+" id=\""+e.getId()+"\">\n";
+                else
+                    out += "<"+e.getNamespace()+":"+e.getName()+" id=\""+e.getId()+"\">\n";
+                for (Characteristic c : e.getCharacteristics()) {
+                    if (c.getObject() instanceof Element) {
+                        if (e.getNamespace() == CorePluginFactory.NAMESPACE)
+                           out += "<"+c.getName()+" o=\"@"+((Element)c.getObject()).getId()+"\"/>\n";
+                        else
+                            out += "<"+c.getNamespace()+":"+c.getName()+" o=\"@"+((Element)c.getObject()).getId()+"\"/>\n";
+                    }
+                    else {
+                        if (e.getNamespace() == CorePluginFactory.NAMESPACE)
+                            out += "<"+c.getName()+" o=\""+c.getObject()+"\"/>\n";
+                        else
+                            out += "<"+c.getNamespace()+":"+c.getName()+" o=\""+c.getObject()+"\"/>\n";
+                    }
+                }
+                if (e.getNamespace() == CorePluginFactory.NAMESPACE)
+                    out += "</"+e.getName()+">\n";
+                else
+                    out += "</"+e.getNamespace()+":"+e.getName()+">\n";
+            }
+        }
+        out += "</"+ELEMENTS+">\n";
+
+
 
         out += "</"+ARCHETYPE+">\n";
         out += "</cube>\n";

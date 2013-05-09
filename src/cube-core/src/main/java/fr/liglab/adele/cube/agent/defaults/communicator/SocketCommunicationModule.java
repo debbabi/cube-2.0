@@ -94,15 +94,17 @@ public class SocketCommunicationModule implements Communicator {
 	 */
 	public void sendMessage(CMessage msg) throws CommunicationException, IOException {
 		//log.info("sending msg...\n" + msg.toString());
+        if (msg != null) {
+            //if (msg.getObject() != null && !msg.getObject().equalsIgnoreCase("keepalive"))
+            //    System.out.println("send: " + msg.toString());
+            String cid;
 
-        String cid;
-
-        cid = msg.getTo();
-        if (cid == null)
-            throw new CommunicationException("Null or Invalid destination!");
-        Client client = new Client(msg,  Utils.hostFromURI(cid), Utils.portFromURI(cid));
-        queue.execute(client);
-
+            cid = msg.getTo();
+            if (cid == null)
+                throw new CommunicationException("Null or Invalid destination!");
+            Client client = new Client(msg,  Utils.hostFromURI(cid), Utils.portFromURI(cid));
+            queue.execute(client);
+        }
 	}
 	
 	/**
@@ -172,15 +174,19 @@ public class SocketCommunicationModule implements Communicator {
 	 * 
 	 * @param msg
 	 */
-	private void notifyMessageArrival(CMessage msg) {		
-		MessagesListener ml = null;
-		if (msg != null && msg.getTo() != null && msg.getTo().trim().length() > 0) {
-			synchronized (this.callbacks) {
-				ml = this.callbacks.get(msg.getTo());
-			} 
-			if (ml != null) {
-				ml.receiveMessage(msg);
-			}
-		}
+	private void notifyMessageArrival(CMessage msg) {
+        if (msg != null) {
+            //if (msg.getObject() != null && !msg.getObject().equalsIgnoreCase("keepalive"))
+            //    System.out.println("receive: " + msg.toString());
+            MessagesListener ml = null;
+            if (msg != null && msg.getTo() != null && msg.getTo().trim().length() > 0) {
+                synchronized (this.callbacks) {
+                    ml = this.callbacks.get(msg.getTo());
+                }
+                if (ml != null) {
+                    ml.receiveMessage(msg);
+                }
+            }
+        }
 	}
 }

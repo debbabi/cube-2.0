@@ -28,6 +28,8 @@ public interface RuntimeModel {
 
     public void deleteListeners();
 
+    public void refresh();
+
     public boolean hasChanged();
 
     public ManagedElement getManagedElement(String uuid);

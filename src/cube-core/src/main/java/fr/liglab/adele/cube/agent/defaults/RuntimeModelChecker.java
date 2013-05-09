@@ -65,9 +65,11 @@ public class RuntimeModelChecker implements Runnable {
 
                     agent.removeUnmanagedElements();
 
+
                     for (ManagedElement me : agent.getRuntimeModel().getManagedElements(ManagedElement.UNCHECKED)) {
                         ((ResolverImpl)((CubeAgentImpl)agent).getResolver()).resolveUncheckedInstance(me);
                     }
+
                 }
                 if (this.destroyRequested) {
                     Thread.currentThread().interrupt();

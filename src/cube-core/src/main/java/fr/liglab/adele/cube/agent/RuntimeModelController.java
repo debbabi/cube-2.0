@@ -11,13 +11,9 @@ import java.util.List;
  */
 public interface RuntimeModelController {
 
-    public String addManagedElement(ManagedElement element);
-
     public String getAgentOfElement(String managed_element_uuid);
 
     public boolean setAgentOfElement(String managed_element_uuid, String agentUri);
-
-   // public List<Property> getProperties(String managed_element_uuid);
 
     public String getPropertyValue(String managed_element_uuid, String name) ;
 
@@ -27,17 +23,27 @@ public interface RuntimeModelController {
 
     public List<String> getReferencedElements(String managed_element_uuid, String reference_name);
 
-    public boolean addReference(String managed_element_uuid, String reference_name, String referenced_element_uuid) throws InvalidNameException;
+    /**
+     * Add Referenced Element to the given Element.
+     * If the Reference identified by 'reference_name' does not exist, a new reference with this name will be created.
+     *
+     * @param managed_element_uuid
+     * @param reference_name
+     * @param referenced_element_uuid
+     * @return
+     * @throws InvalidNameException
+     */
+    public boolean addReferencedElement(String managed_element_uuid, String reference_name, String referenced_element_uuid) throws InvalidNameException;
 
-    public boolean removeReference(String managed_element_uuid, String reference_name, String referenced_element_uuid);
+    public boolean addReferencedElement(String managed_element_uuid, String reference_name, boolean onlyone, String referenced_element_uuid) throws InvalidNameException;
 
-    public ManagedElement getLocalElement(String managed_element_uuid);
+    public boolean removeReferencedElement(String managed_element_uuid, String reference_name, String referenced_element_uuid);
 
-    boolean hasReferencedElements(String managed_element_uuid, String reference_name, String referenced_element_uuri);
+    boolean hasReferencedElement(String managed_element_uuid, String reference_name, String referenced_element_uuri);
 
     public void receiveMessage(CMessage msg);
 
     public boolean areSimilar(String instance_uuid1, String instance_uuid2);
 
-    //List<String> getElements(String agentUri, String namespace, String name);
+    public ManagedElement getLocalElement(String managed_element_uuid);
 }
