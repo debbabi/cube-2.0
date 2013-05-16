@@ -22,7 +22,7 @@ target
 #lib
 bundle
 dist
-bin
+#bin
 build
 .wtpmodules
 .deployables
