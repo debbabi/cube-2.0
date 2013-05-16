@@ -127,17 +127,19 @@ public class MonitorGUI extends JFrame {
                         N.set(LABEL, ci.getName());
                     N.set(DESCRIPTION, ci.getHTMLDescription());
                     N.set(STATE, ci.getState());
+                    //synchronized (nodes){
+                        nodes.put(ci.getUUID(), N);
+                    //}
                     for (Reference r : ci.getReferences()) {
                         for (String ref : r.getReferencedElements()) {
-                            Node n2 = this.nodes.get(ref);
-                            if (n2 != null) {
-                                graph.addEdge(N, n2);
-                            }
+                            //synchronized (nodes){
+                                Node n2 = this.nodes.get(ref);
+                                if (n2 != null) {
+                                    graph.addEdge(N, n2);
+                                }
+                            //}
                         }
                     }
-
-                    nodes.put(ci.getUUID(), N);
-
                 }
             } else {
 

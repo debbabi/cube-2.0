@@ -69,7 +69,20 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
 
     void resolveUncheckedInstance(ManagedElement instance) {
 
-        if (instance != null && instance.getState() == ManagedElement.UNCHECKED) {
+        boolean check = false;
+        if (instance != null) {
+            synchronized (instance) {
+                if (instance.getState() == ManagedElement.UNCHECKED && ((AbstractManagedElement)instance).isInResolution() == false) {
+                    ((AbstractManagedElement)instance).setInResolution(true);
+                    check = true;
+                } else {
+                    return;
+                }
+            }
+        } else {
+            return;
+        }
+        if (check == true) {
             info("resolving UNCHECKED element '"+instance.getUri()+"'...");
             /*
              * Create the root variable that contains the newly created instance (to be resolved).
@@ -100,7 +113,7 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
                 //((RuntimeModelImpl)agent.getRuntimeModel()).refresh();
 
             } else {
-
+                System.out.println("[RESOLVER] element '"+instance.getName()+"' not resolved! ");
                 getCubeAgent().removeUnmanagedElements();
             }
 
@@ -141,8 +154,10 @@ public class ResolverImpl implements Resolver, RuntimeModelListener {
                     if (me != null) {
                         if (me.getState() == ManagedElement.UNCHECKED) {
                             ((AbstractManagedElement)me).validate();
+                            ((AbstractManagedElement)me).setInResolution(false);
                         } else if (me.getState() == ManagedElement.UNMANAGED) {
                             agent.getRuntimeModel().add(me);
+                            ((AbstractManagedElement)me).setInResolution(false);
                         }
                         changed = true;
                     }

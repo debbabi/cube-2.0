@@ -5,7 +5,7 @@
 
 	<rmcheck-interval value="3000"/>
 	<keepalive-interval value="2000"/>
-	<keepalive-retry value="1"/>
+	<keepalive-retry value="2"/>
 
 	<debug value="true"/>
 
@@ -13,8 +13,10 @@
 
 	<plugins>
 		<plugin id="fr.liglab.adele.cube.core"/>			
-		<plugin id="fr.liglab.adele.cube.osgi"/>
-		<!--plugin id="fr.liglab.adele.cube.rm.monitoring"/-->
+		<plugin id="fr.liglab.adele.cube.osgi">
+			<property name="type" value="AggregationServer"/>
+		</plugin>
+		<plugin id="fr.liglab.adele.cube.rm.monitoring"/>
 	</plugins>
   </agent>
 </cube>

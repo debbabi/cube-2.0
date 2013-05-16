@@ -150,9 +150,11 @@ public class ResolutionGraph {
                  */
                 if (obj.getSubject().getName().equalsIgnoreCase(root.getName()) &&
                         obj.getNamespace().equalsIgnoreCase(root.getNamespace())) {
+
                     //info("ok the same element type! but... ");
                     // we check if all the descriptions in the archetype for this subject variable are met for the
                     // current instance
+
                     if (evaluateSubject(root, obj.getSubject())) {
                         Constraint c = addConstraint(root, obj);
                         info("the objective constraint '"+c.getName()+"' should be resolved");
@@ -234,24 +236,30 @@ public class ResolutionGraph {
     private void buildObject(Variable var, Element e) {
 
         for (Characteristic car : e.getUnaryCharacteristics()) {
-            Constraint c = addConstraint(var, car);
+            addConstraint(var, car);
             //info("** adding unary characteristic constraint for subject var: " + c.getName());
         }
         for (Characteristic car : e.getBinaryCharacteristics()) {
             Constraint c = addConstraint(var, car);
             //info("** adding binary characteristic constraint for subject var: " + c.getName());
-            buildObject(c.getObjectVariable(), (Element)car.getObject());
+            if (c != null)
+                buildObject(c.getObjectVariable(), (Element)car.getObject());
         }
         for (Objective obj : this.agent.getArchetype().getObjectives()) {
-            if (obj.getSubject() == e) {
+            // TODO: à revoir!
+            // - unary objectives should be added!
+            if (obj.getSubject() == e /*&& (obj.getResolutionStrategy() != null && (obj.getResolutionStrategy().equalsIgnoreCase("f") || obj.getResolutionStrategy().equalsIgnoreCase("fc")))*/)  {
+
                 Constraint c = addConstraint(var, obj);
-                info("the objective constraint '"+c.getName()+"' is added to the description of the variable " + var.getName());
-                Variable objVar = c.getObjectVariable();
-                        /*
-                         * if it is a binary constraint, we construct the graph's path.
-                         */
-                if (objVar != null && !objVar.isPrimitive()) {
-                    buildObject(objVar, (Element)obj.getObject());
+                if (c != null) {
+                    info("the objective constraint '"+c.getName()+"' is added to the description of the variable " + var.getName());
+                    Variable objVar = c.getObjectVariable();
+                            /*
+                             * if it is a binary constraint, we construct the graph's path.
+                             */
+                    if (objVar != null && !objVar.isPrimitive()) {
+                        buildObject(objVar, (Element)obj.getObject());
+                    }
                 }
             }
         }
@@ -669,8 +677,11 @@ public class ResolutionGraph {
                 Object old = v.getValue();
 
                 for (Constraint c : v.getBinaryConstraints()) {
-                    //System.out.println("######### 1");
-                    if (old != null) {
+                    /*System.out.println("######### binary constraints related to '"+v.getName()+"' : " + c.getName());
+                    for (Object s : c.getObjectVariable().values) {
+                        System.out.println("- " + s);
+                    }*/
+                    if (old != null && c.getObjectVariable() != null && c.getObjectVariable().values.size() > 1) {
                         c.getObjectVariable().removeValue();
                     }
                     if (c.getObjectVariable() != null && c.getObjectVariable().hasValue()) {
@@ -690,23 +701,23 @@ public class ResolutionGraph {
                     if (old != null ) {
 
                         if (agent.getRuntimeModelController().areSimilar(uuid, old.toString())) {
-                            System.out.println("######### old and new values similar!");
+                            //System.out.println("######### old and new values similar!");
                             v.findStep++;
                             return uuid;
                         } else {
-                            System.out.println("old and new are not similar!");
-                            System.out.println("old :" + old);
-                            System.out.println("new :" + uuid);
+                            //System.out.println("old and new are not similar!");
+                            //System.out.println("old :" + old);
+                            //System.out.println("new :" + uuid);
                         }
                     }  else {
-                        System.out.println("old value null!");
+                        //System.out.println("old value null!");
                     }
 
                     v.values.push(uuid);
                     //c.getObjectVariable().removeValue();
                     return uuid;
                 }  else {
-                    System.out.println("create using characteristics return null!");
+                    //System.out.println("create using characteristics return null!");
                 }
                 v.findStep++;
                 /*
@@ -745,20 +756,65 @@ public class ResolutionGraph {
             }
             case 1: {
                 // createValue an instance with the given characteristics.
-                info("step 3 : creating new instance..");
+                info("step 3 : creating new '"+v.getName()+"' instance..");
 
+                //apply binary constraints
+
+                Object old = v.getValue();
+
+                for (Constraint c : v.getBinaryConstraints()) {
+                    /*System.out.println("######### binary constraints related to '"+v.getName()+"' : " + c.getName());
+                    for (Object s : c.getObjectVariable().values) {
+                        System.out.println("- " + s);
+                    }*/
+                    if (old != null && c.getObjectVariable() != null && c.getObjectVariable().values.size() > 1) {
+                        c.getObjectVariable().removeValue();
+                    }
+                    if (c.getObjectVariable() != null && c.getObjectVariable().hasValue()) {
+                        // System.out.println("######### object.value: " + c.getObjectVariable().getValue());
+                        //c.getObjectVariable().removeValue();
+                        c.applyDescription(agent);
+                        //System.out.println("######### " + c.getObjectVariable().getValue());
+                        c.getObjectVariable().removeValue();
+
+                    }
+                }
+
+
+                //System.out.println("######### old.value" + old);
                 String uuid = createUsingCharacteristics(v);
-                while (uuid != null) {
+                if (uuid != null) {
+                    if (old != null ) {
+
+                        if (agent.getRuntimeModelController().areSimilar(uuid, old.toString())) {
+                            //System.out.println("######### old and new values similar!");
+                            v.findStep++;
+                            return uuid;
+                        } else {
+                            //System.out.println("old and new are not similar!");
+                            //System.out.println("old :" + old);
+                            //System.out.println("new :" + uuid);
+                        }
+                    }  else {
+                        //System.out.println("old value null!");
+                    }
+
                     v.values.push(uuid);
-                    //v.addAlreadyTestedValue(uuid);
-                    //if (evaluateValue(v) == true) {
+                    //c.getObjectVariable().removeValue();
+                    return uuid;
+                }  else {
+                    //System.out.println("create using characteristics return null!");
+                }
+                v.findStep++;
+                /*
+                String uuid = createUsingCharacteristics(v);
+                if (uuid != null) {
+                    v.values.push(uuid);
                     v.findStep++;
                     return uuid;
-                    //} else {
-                    // createValue another instance, but with different configuration!
-                    //    uuid = createUsingCharacteristics(v);
-                    //}
                 }
+                */
+                //v.findStep++;
 
             }
             default: {
@@ -780,7 +836,10 @@ public class ResolutionGraph {
         info("checking object variable: " + v.getName());
         for (Constraint c : v.getConstraints()) {
             info("checking constraint: " + c.getName());
-
+            if (c.isObjectiveConstraint() && (c.getResolutionStrategy() == Constraint.FIND_OR_CREATE || c.getResolutionStrategy() == Constraint.CREATE)) {
+                info("avoiding to check objective constraint '"+c.getName() + "' used as description constraint!");
+                continue;
+            }
             // check direct constraint
             if (c.check(agent) == false)  {
                 info("constraint '"+c.getName()+"' returns FALSE!");
@@ -788,10 +847,12 @@ public class ResolutionGraph {
             }
             // check referenced elements
             if (c.isBinaryConstraint()) {
+
                 if (evaluateValue(c.getObjectVariable()) == false) {
                     info("checking related value '"+c.getObjectVariable().getName()+"' of the variable '"+v.getName()+"' returns FALSe!");
                     return false;
                 }
+
             }
             info("constraint '" + c.getName()+"' TRUE");
         }
@@ -846,16 +907,19 @@ public class ResolutionGraph {
 
     private Constraint addConstraint(Variable var, Characteristic car) {
         Variable objvar;
-        if (car.getObject() instanceof Element) {
-            // Binary
-            Element obj = (Element)car.getObject();
-            objvar = new Variable(this.agent, obj.getNamespace(), obj.getName());
-        } else {
-            // Unary
-            objvar = new Variable(this.agent, car.getObject().toString());
+        if (car.getObject() != null) {
+            if (car.getObject() instanceof Element) {
+                // Binary
+                Element obj = (Element)car.getObject();
+                objvar = new Variable(this.agent, obj.getNamespace(), obj.getName());
+            } else {
+                // Unary
+                objvar = new Variable(this.agent, car.getObject().toString());
+            }
+            Constraint c = new Constraint(var, car.getNamespace(), car.getName(), objvar);
+            return c;
         }
-        Constraint c = new Constraint(var, car.getNamespace(), car.getName(), objvar);
-        return c;
+        return null;
     }
 
     private void print() {

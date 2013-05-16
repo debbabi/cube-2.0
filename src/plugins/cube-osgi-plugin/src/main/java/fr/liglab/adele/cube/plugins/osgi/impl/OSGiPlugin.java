@@ -47,20 +47,31 @@ public class OSGiPlugin extends AbstractPlugin {
     }
 
     public void run() {
-        //System.out.println("---------------- OSGi Plugin -----------------");
-        BundleContext btx = getCubeAgent().getPlatform().getBundleContext();
-        String node_type = btx.getProperty(CUBE_NODE_TYPE);
-        String node_id = btx.getProperty(CUBE_NODE_ID);
 
-        if (node_type == null) node_type = "OSGi";
-        if (node_id == null) node_id = "OSGi-" + index++;
+        // initialize type and id from the cube agent's configuration file.
+        Object type = getProperties().get("type");
+        Object id = getProperties().get("id");
+
+
+        // if not found, initialize them from OSGi configuration properties
+        BundleContext btx = getCubeAgent().getPlatform().getBundleContext();
+        if (type == null)
+            type = btx.getProperty(CUBE_NODE_TYPE);
+        if (id == null)
+            id = btx.getProperty(CUBE_NODE_ID);
+
+        // else, take default values.
+
+        if (type == null) type = "OSGi";
+        if (id == null) id = "OSGi-" + index++;
 
         Properties properties = new Properties();
+        // TODO add type and id to properties!
         try {
             ManagedElement me = getCubeAgent().newManagedElement(CorePluginFactory.NAMESPACE, Node.NAME, properties);
             if (me != null && me instanceof Node) {
-                ((Node)me).setNodeId(node_id);
-                ((Node)me).setNodeType(node_type);
+                ((Node)me).setNodeId(id.toString());
+                ((Node)me).setNodeType(type.toString());
                 getCubeAgent().getRuntimeModel().add(me);
                 getCubeAgent().getRuntimeModel().refresh();
             }

@@ -5,45 +5,61 @@
 
 		<goals>
 			<goal description="dynamic scopes management">
-				<core:inScope s="@aggr_server" o="@orange_infra" r="fc"/>
-				<core:inScope s="@med_server" o="@orange_infra" r="fc"/>		
-				<core:controlledBy s="@orange_infra" o="@master" r="f"/>			
+				<inScope s="@aggr_server" o="@orange_infra" r="fc"/>
+				<inScope s="@med_server" o="@orange_infra" r="fc"/>		
+				<controlledBy s="@orange_infra" o="@master" r="f"/>			
+			</goal>
+			<goal description="components placement">
+				<!--onNode s="@ws_in_adapter" o="@aggr_server" r="f"/-->
+				<onNode s="@loadbalancing_out_adapter" o="@aggr_server" r="f"/>
+				<!--onNode s="@JMS_in_adapter" o="@med_server" r="f"/-->
 			</goal>
 			<goal description="initial components creation">
-				<core:hasComponent s="@aggr_server" o="@aggr_ws" r="fc"/>
+				<hasComponent s="@aggr_server" o="@ws_in_adapter0" r="fc"/>
+				<hasComponent s="@med_server" o="@JMS_in_adapter" r="fc"/>
 			</goal>
-			<goal description="self-growing">
+			<goal>
+				<connected s="@ws_in_adapter" o="@loadbalancing_out_adapter" r="fc"/>
+				<hasSourceComponent s="@JMS_in_adapter" o="@loadbalancing_out_adapter" r="f"/>
+			</goal>
+			<!--goal description="self-growing">
 				<core:connected s="@aggr_ws" o="@loadbalancing_outadapter" r="fc"/>
-			</goal>
+			</goal-->
 		</goals>
 
 
 		<elements>
-			<core:Master id="master">
-				<core:inAgent o="cube://localhost:38000"/>
-			</core:Master>
+			<Master id="master">
+				<inAgent o="cube://localhost:38000"/>
+			</Master>
 
-			<core:Scope id="orange_infra">
-				<core:hasScopeId o="OrangeInfrastructure"/>
-				<core:controlledBy o="@master"/>
-			</core:Scope>
+			<Scope id="orange_infra">
+				<hasScopeId o="OrangeInfrastructure"/>				
+			</Scope>
 
-			<core:Node id="aggr_server">
-				<core:hasNodeType o="AggregationServer"/>
-			</core:Node>
+			<Node id="aggr_server">
+				<hasNodeType o="AggregationServer"/>
+			</Node>
 
-			<core:Node id="med_server">
-				<core:hasNodeType o="MediationServer"/>
-			</core:Node>
+			<Node id="med_server">
+				<hasNodeType o="MediationServer"/>
+			</Node>
 
-			<core:Component id="aggr_ws">
-				<core:hasComponentType o="AggrWS"/>
-			</core:Component>
+			<Component id="ws_in_adapter">
+				<hasComponentType o="WSAdapter"/>
+			</Component>
 
-			<core:Component id="loadbalancing_outadapter">
-				<core:hasComponentType o="LBAdapter"/>
-				<!--core:onSameNodeAs o="@aggr_ws"/-->
-			</core:Component>
+			<Component id="ws_in_adapter0">
+				<hasComponentType o="WSAdapter"/>
+			</Component>
+
+			<Component id="loadbalancing_out_adapter">
+				<hasComponentType o="LBAdapter"/>	
+			</Component>
+
+			<Component id="JMS_in_adapter">
+				<hasComponentType o="JMSInAdapter"/>
+			</Component>
 
 		</elements>
 

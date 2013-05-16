@@ -44,6 +44,8 @@ public class HasComponent implements ConstraintResolver {
     }
 
     public boolean check(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+        System.out.println("hasComponent.check..");
+
         Object instance1_uuid = subjectVariable.getValue();
         Object instance2_uuid = objectVariable.getValue();
 
@@ -57,6 +59,7 @@ public class HasComponent implements ConstraintResolver {
                 }
             }
         }
+
         return false;
     }
 
@@ -83,6 +86,7 @@ public class HasComponent implements ConstraintResolver {
      * @return
      */
     public boolean performObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+
         Object instance1_uuid = subjectVariable.getValue();
         Object instance2_uuid = objectVariable.getValue();
 
@@ -100,6 +104,7 @@ public class HasComponent implements ConstraintResolver {
                 }
             }
         }
+
         return false;
     }
 
@@ -112,6 +117,7 @@ public class HasComponent implements ConstraintResolver {
      * @return
      */
     public boolean cancelObjective(CubeAgent agent, Variable subjectVariable, Variable objectVariable) {
+
         Object instance1_uuid = subjectVariable.getValue();
         Object instance2_uuid = objectVariable.getValue();
 
@@ -125,6 +131,7 @@ public class HasComponent implements ConstraintResolver {
                 }
             }
         }
+
         return false;
     }
 

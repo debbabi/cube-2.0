@@ -148,6 +148,7 @@ public class ArchetypeParser {
                             XMLElement typeElement = cobjects[i];
                             if (typeElement != null) {
                                 String namespace = typeElement.getNameSpace();
+                                if (namespace == null) namespace = CorePluginFactory.NAMESPACE;
                                 String name = typeElement.getName();
                                 String id = typeElement.getAttribute(ID);
 
@@ -171,6 +172,7 @@ public class ArchetypeParser {
                                         XMLElement caract = caracts[j];
                                         if (caract != null) {
                                             String cnamespace = caract.getNameSpace();
+                                            if (cnamespace == null) cnamespace = CorePluginFactory.NAMESPACE;
                                             String cname = caract.getName();
                                             String cdescription = caract.getAttribute(DESCRIPTION);
                                             String cobjectAttr = caract.getAttribute(OBJECT);
@@ -204,7 +206,6 @@ public class ArchetypeParser {
                                     String id = xmlgoal.getAttribute(ID);
                                     String description = xmlgoal.getAttribute(DESCRIPTION);
 
-
                                     Goal g =new Goal(archtype, id, description);
                                     //System.out.println("GOAL:"+g.getId() + "/"+ g.getDescription());
                                     archtype.addGoal(g);
@@ -215,6 +216,7 @@ public class ArchetypeParser {
                                             XMLElement xmlobjective = xmlobjectives[j];
                                             if (xmlobjective != null) {
                                                 String onamespace = xmlobjective.getNameSpace();
+                                                if (onamespace == null) onamespace = CorePluginFactory.NAMESPACE;
                                                 String oname = xmlobjective.getName();
                                                 String odescription = xmlobjective.getAttribute(DESCRIPTION);
                                                 String osubject = xmlobjective.getAttribute(SUBJECT);
@@ -233,7 +235,10 @@ public class ArchetypeParser {
                                                 Object object = null;
                                                 if (oobject.startsWith("@")) {
                                                     object = archtype.getElement(oobject.substring(1));
+                                                } else {
+                                                    object = oobject;
                                                 }
+                                                //log.info("Objective '"+oname+"' has the object: "+ oobject);
                                                 o = new Objective(g, onamespace, oname, subject, object, resolution, priority, odescription);
                                                 g.addObjective(o);
 
@@ -275,12 +280,15 @@ public class ArchetypeParser {
             for (Objective o : g.getObjectives()) {
                 if (o.getObject() instanceof Element)  {
                     if (o.getNamespace() == CorePluginFactory.NAMESPACE)
-                        out += "<"+o.getName()+" s=\"@"+o.getSubject().getId()+"\" o=\"@"+((Element)o.getObject()).getId()+"\"/>\n";
+                        out += "<"+o.getName()+" s=\"@"+o.getSubject().getId()+"\" o=\"@"+((Element)o.getObject()).getId()+"\" r=\""+o.getResolutionStrategy()+"\" />\n";
                     else
-                        out += "<"+o.getNamespace()+":"+o.getName()+" s=\"@"+o.getSubject().getId()+"\" o=\"@"+((Element)o.getObject()).getId()+"\"/>\n";
+                        out += "<"+o.getNamespace()+":"+o.getName()+" s=\"@"+o.getSubject().getId()+"\" o=\"@"+((Element)o.getObject()).getId()+"\" r=\""+o.getResolutionStrategy()+"\"/>\n";
                 }
                 else {
-                    out += "<"+o.getNamespace()+":"+o.getName()+" s=\"@"+o.getSubject().getId()+"\" o=\""+o.getObject().toString()+"\"/>\n";
+                    if (o.getObject() != null)
+                        out += "<"+o.getNamespace()+":"+o.getName()+" s=\"@"+o.getSubject().getId()+"\" o=\""+o.getObject().toString()+"\"/>\n";
+                    else
+                        log.warning(o.getName() + " object value is null");
                 }
             }
             out += "</"+GOAL+">\n";

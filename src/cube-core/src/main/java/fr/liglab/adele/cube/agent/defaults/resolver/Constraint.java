@@ -44,6 +44,7 @@ public class Constraint implements Serializable {
     public final static int FIND = 0;
     public final static int FIND_OR_CREATE = 1;
     public final static int CREATE = 2;
+    public final static int CHECK_ONLY = 3;
 
     /**
      * Constraint Type.
@@ -68,9 +69,11 @@ public class Constraint implements Serializable {
         this.namespace = namespace;
         this.name = name;
         this.objectVariable = objectVar;
+        if (objectVar != null && objectVar.isPrimitive())
+            this.resolutionStrategy = CHECK_ONLY;
         this.objectiveConstraint = objectiveConstraint;
-
         this.subjectVariable.addConstraint(this);
+
     }
 
 

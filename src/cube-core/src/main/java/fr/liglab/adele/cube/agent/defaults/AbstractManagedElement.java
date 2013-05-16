@@ -77,6 +77,11 @@ public abstract class AbstractManagedElement extends Observable implements Manag
     private static int index=0;
 
     /**
+     * Is the current element instance in a currently holding resolution process?
+     */
+    private boolean inResolution = false;
+
+    /**
      * Gets the instance current state.
      * @return
      */
@@ -329,7 +334,10 @@ public abstract class AbstractManagedElement extends Observable implements Manag
 
     public String getHTMLDescription() {
         String msg = "<html>";
-        msg += "<br/> <b>" + this.getUri() + "</b><br/><hr/>";
+        msg += "<br/> <b>" + this.getUUID() + "</b><br/><hr/>";
+        msg += "<p><b>MANAGED ELEMENT</b><br/><ul>";
+        msg += "<li> " + this.getName() + "</li>";
+        msg += "</ul>";
         if (this.getProperties().size() > 0) {
             msg += "<p><b>PROPERTIES</b><br/><ul>";
             for (Property p : this.getProperties()) {
@@ -443,4 +451,11 @@ public abstract class AbstractManagedElement extends Observable implements Manag
         return false;
     }
 
+    public boolean isInResolution() {
+        return inResolution;
+    }
+
+    public void setInResolution(boolean inResolution) {
+        this.inResolution = inResolution;
+    }
 }
